@@ -26,6 +26,21 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> {
 	@Shadow
 	protected T handler;
 
+	@Shadow
+	protected int titleX;
+
+	@Shadow
+	protected int titleY;
+
+	@Shadow
+	protected int playerInventoryTitleX;
+
+	@Shadow
+	protected int backgroundHeight;
+
+	@Shadow
+	protected int playerInventoryTitleY;
+
 	@Inject(method = "init", at = @At("TAIL"))
 	private void betterlooms$moveSlots(CallbackInfo ci) {
 		if (handler instanceof LoomScreenHandler) {
@@ -34,23 +49,27 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> {
 
 				switch (slot.id) {
 					case 0 -> {
-						acc.setX(-20);
-						acc.setY(0);
+						acc.setX(6);
+						acc.setY(16);
 					}   // banner
 					case 1 -> {
-						acc.setX(-20);
-						acc.setY(20);
+						acc.setX(6);
+						acc.setY(36);
 					}   // dye
 					case 2 -> {
-						acc.setX(-20);
-						acc.setY(40);
+						acc.setX(6);
+						acc.setY(56);
 					}   // pattern
 					case 3 -> {
-						acc.setX(180);
-						acc.setY(70);
-					}  // output
+						acc.setX(143);
+						acc.setY(100);
+					}
+					default -> {
+						acc.setY(acc.getY()+45);
+					}
 				}
 			}
 		}
 	}
+
 }

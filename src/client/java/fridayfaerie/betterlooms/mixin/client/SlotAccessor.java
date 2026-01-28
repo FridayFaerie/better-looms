@@ -18,9 +18,14 @@ import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 @Mixin(Slot.class)
 public interface SlotAccessor {
+
 	@Accessor("x")
 	void setX(int x);
+	@Accessor("x")
+	int getX();
 
 	@Accessor("y")
 	void setY(int y);
+	@Accessor("y")
+	int getY();
 }
