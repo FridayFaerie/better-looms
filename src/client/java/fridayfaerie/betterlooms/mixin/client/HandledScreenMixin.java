@@ -29,19 +29,27 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> {
 	@Inject(method = "init", at = @At("TAIL"))
 	private void betterlooms$moveSlots(CallbackInfo ci) {
 		if (handler instanceof LoomScreenHandler) {
-			repositionLoomSlots(handler);
-		}
-	}
+			for (Slot slot : handler.slots) {
+				SlotAccessor acc = (SlotAccessor) slot;
 
-	private void repositionLoomSlots(ScreenHandler handler) {
-		for (Slot slot : handler.slots) {
-			SlotAccessor acc = (SlotAccessor) slot;
-
-			switch (slot.id) {
-				case 0 -> { acc.setX(20); acc.setY(20); }   // banner
-				case 1 -> { acc.setX(44); acc.setY(20); }   // dye
-				case 2 -> { acc.setX(68); acc.setY(20); }   // pattern
-				case 3 -> { acc.setX(140); acc.setY(50); }  // output
+				switch (slot.id) {
+					case 0 -> {
+						acc.setX(-20);
+						acc.setY(0);
+					}   // banner
+					case 1 -> {
+						acc.setX(-20);
+						acc.setY(20);
+					}   // dye
+					case 2 -> {
+						acc.setX(-20);
+						acc.setY(40);
+					}   // pattern
+					case 3 -> {
+						acc.setX(180);
+						acc.setY(70);
+					}  // output
+				}
 			}
 		}
 	}

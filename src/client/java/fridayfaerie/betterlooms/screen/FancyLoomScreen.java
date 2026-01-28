@@ -1,6 +1,8 @@
 package fridayfaerie.betterlooms.screen;
 
 import java.util.List;
+
+import fridayfaerie.betterlooms.BetterLooms;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BannerPattern;
@@ -32,6 +34,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import org.apache.logging.log4j.core.pattern.LoggerPatternConverter;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
@@ -45,7 +48,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private static final Identifier PATTERN_HIGHLIGHTED_TEXTURE = Identifier.ofVanilla("container/loom/pattern_highlighted");
     private static final Identifier PATTERN_TEXTURE = Identifier.ofVanilla("container/loom/pattern");
     private static final Identifier ERROR_TEXTURE = Identifier.ofVanilla("container/loom/error");
-    private static final Identifier TEXTURE = Identifier.ofVanilla("textures/gui/container/loom.png");
+    private static final Identifier TEXTURE = Identifier.of("better-looms", "textures/gui/fancy_loom_gui.png");
     private static final int PATTERN_LIST_COLUMNS = 4;
     private static final int PATTERN_LIST_ROWS = 4;
     private static final int SCROLLBAR_WIDTH = 12;
@@ -131,13 +134,20 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     @Override
     protected void init() {
         super.init();
+        this.x = 152;
+        this.y = 2;
+        this.backgroundWidth = 176;
+        this.backgroundHeight = 166;
+
+
 
 
         ModelPart modelPart = this.client.getLoadedEntityModels().getModelPart(EntityModelLayers.STANDING_BANNER_FLAG);
         this.bannerField = new BannerFlagBlockModel(modelPart);
 
+
         int buttonX = this.x + 10;
-        int buttonY = this.y - 50;
+        int buttonY = this.y + 10;
 
         int index = 0;
         for (DyeColor dyeColor : DyeColor.values()) {
@@ -163,10 +173,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        this.renderMain(context, mouseX, mouseY, deltaTicks);
-        this.renderCursorStack(context, mouseX, mouseY);
-        this.renderLetGoTouchStack(context);
-//        super.render(context, mouseX, mouseY, deltaTicks);
+        super.render(context, mouseX, mouseY, deltaTicks);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
     }
 
@@ -178,7 +185,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     protected void drawBackground(DrawContext context, float deltaTicks, int mouseX, int mouseY) {
         int i = this.x;
         int j = this.y;
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth+30, this.backgroundHeight, 256, 256);
 
         Slot slot = this.handler.getBannerSlot();
         Slot slot2 = this.handler.getDyeSlot();
