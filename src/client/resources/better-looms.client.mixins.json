@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "fridayfaerie.betterlooms.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"HandledScreensMixin",
+		"HandledScreenMixin",
+		"SlotAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
