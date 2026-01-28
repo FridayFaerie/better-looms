@@ -4,7 +4,10 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import com.google.common.collect.ImmutableList;
+import fridayfaerie.betterlooms.BetterLooms;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BannerPattern;
@@ -77,6 +80,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private boolean scrollbarClicked;
     private int visibleTopRow;
     private DyeColor selectedDye = DyeColor.WHITE;
+    private int selectedPattern = 0;
     private List<RegistryEntry.Reference<BannerPattern>> allPatterns = List.of();
 
 
@@ -90,6 +94,11 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     protected void init() {
         super.init();
 
+
+//        allPatterns = (List<RegistryEntry<BannerPattern>>)this.handler.bannerPatternLookup
+//                .getOptional(BannerPatternTags.NO_ITEM_REQUIRED)
+//                .map(ImmutableList::copyOf)
+//                .orElse(ImmutableList.of());
         var networkHandler = MinecraftClient.getInstance().getNetworkHandler();
         if (networkHandler != null) {
             var registry = networkHandler
@@ -105,36 +114,37 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         this.x = 152;
         this.y = 2;
         this.backgroundWidth = 176;
-        this.backgroundHeight = 206;
+        this.backgroundHeight = 216;
         this.titleX = 8;
         this.titleY = 6;
         this.playerInventoryTitleX = 8;
-        this.playerInventoryTitleY = this.backgroundHeight - 94;
+        this.playerInventoryTitleY = this.backgroundHeight - 98;
 
         ModelPart modelPart = this.client.getLoadedEntityModels().getModelPart(EntityModelLayers.STANDING_BANNER_FLAG);
         this.bannerField = new BannerFlagBlockModel(modelPart);
 
 
-        int buttonX = this.x + 32;
+        int buttonX = this.x + 28;
         int buttonY = this.y + 13;
 
         int index = 0;
         for (DyeColor dyeColor : DyeColor.values()) {
-            final int x = buttonX + (index % 2) * 13;
+            final int x = buttonX + (index % 2) * 14;
             final int y = buttonY + (index / 2) * 13;
             index++;
+            DyeButtonWidget dyeButton = new DyeButtonWidget(
 
-            this.addDrawableChild(
-                    ButtonWidget.builder(Text.empty(), button -> {
+                    x, y, dyeColor, () -> selectedDye == dyeColor,
+                    button -> {
                         int dyeSlot = findDyeSlot(dyeColor);
-                        if (dyeSlot == -1) return;
-
-                        // Move dye into loom slot 1
-                        swapSlots(dyeSlot, 1);
-
-                        selectedDye = dyeColor;
-                    }).dimensions(x, y, 13, 13).build()
+                        if (dyeSlot != -1) {
+                            swapSlots(dyeSlot, 1);
+                            selectedDye = dyeColor;
+                        }
+                    }
             );
+            this.addDrawableChild(dyeButton);
+
         }
 
 
@@ -147,7 +157,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     }
 
     private int getRows() {
-        return MathHelper.ceilDiv(this.handler.getBannerPatterns().size(), 4);
+        return MathHelper.ceilDiv(this.allPatterns.size(), 4);
     }
 
     @Override
@@ -172,14 +182,13 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, PATTERN_SLOT_TEXTURE, i + slot3.x, j + slot3.y, 16, 16);
         }
 
-        int k = (int)(41.0F * this.scrollPosition);
+        int k = (int)(84.0F * this.scrollPosition);
         Identifier identifier = this.canApplyDyePattern ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
         context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i + 119, j + 13 + k, 12, 15);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
              DyeColor dyeColor = ((BannerItem)slot4.getStack().getItem()).getColor();
-//            DyeColor dyeColor = selectedDye;
-            int l = i + 141;
-            int m = j + 8;
+            int l = i + 144;
+            int m = j + 29;
             context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 20, m + 40);
         } else if (this.hasTooManyPatterns) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, i + slot4.x - 5, j + slot4.y - 5, 26, 26);
@@ -187,10 +196,10 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
         if (this.canApplyDyePattern) {
             int n = i + 60;
-            int l = j + 13;
+            int l = j + 15;
             List<RegistryEntry.Reference<BannerPattern>> list = this.allPatterns;
 //            List<RegistryEntry<BannerPattern>> list = this.allPatterns;
-//            List<RegistryEntry<BannerPattern>> list = this.handler.getBannerPatterns();
+
 
             label64:
             for (int o = 0; o < 7; o++) {
@@ -206,7 +215,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                     RegistryEntry<BannerPattern> registryEntry = (RegistryEntry<BannerPattern>)list.get(r);
                     boolean bl = mouseX >= s && mouseY >= t && mouseX < s + 14 && mouseY < t + 14;
                     Identifier identifier2;
-                    if (r == this.handler.getSelectedPattern()) {
+                    if (r == this.selectedPattern) {
                         identifier2 = PATTERN_SELECTED_TEXTURE;
                     } else if (bl) {
                         identifier2 = PATTERN_HIGHLIGHTED_TEXTURE;
@@ -227,18 +236,18 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     }
 
     private void drawBanner(DrawContext context, int x, int y, Sprite sprite) {
-        context.getMatrices().pushMatrix();
-        context.getMatrices().translate(x + 4, y + 2);
-        float f = sprite.getMinU();
-        float g = f + (sprite.getMaxU() - sprite.getMinU()) * 21.0F / 64.0F;
-        float h = sprite.getMaxV() - sprite.getMinV();
-        float i = sprite.getMinV() + h / 64.0F;
-        float j = i + h * 40.0F / 64.0F;
-        int k = 5;
-        int l = 10;
-        context.fill(0, 0, 5, 10, DyeColor.GRAY.getEntityColor());
-        context.drawTexturedQuad(sprite.getAtlasId(), 0, 0, 5, 10, f, g, i, j);
-        context.getMatrices().popMatrix();
+            context.getMatrices().pushMatrix();
+            context.getMatrices().translate(x + 4, y + 2);
+            float f = sprite.getMinU();
+            float g = f + (sprite.getMaxU() - sprite.getMinU()) * 21.0F / 64.0F;
+            float h = sprite.getMaxV() - sprite.getMinV();
+            float i = sprite.getMinV() + h / 64.0F;
+            float j = i + h * 40.0F / 64.0F;
+            int k = 5;
+            int l = 10;
+            context.fill(0, 0, 5, 10, DyeColor.GRAY.getEntityColor());
+            context.drawTexturedQuad(sprite.getAtlasId(), 0, 0, 5, 10, f, g, i, j);
+            context.getMatrices().popMatrix();
     }
 
     @Override
@@ -248,17 +257,23 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             int i = this.x + 60;
             int j = this.y + 13;
 
-            for (int k = 0; k < 4; k++) {
+            for (int k = 0; k < 7; k++) {
                 for (int l = 0; l < 4; l++) {
                     double d = click.x() - (i + l * 14);
                     double e = click.y() - (j + k * 14);
                     int m = k + this.visibleTopRow;
                     int n = m * 4 + l;
-                    if (d >= 0.0 && e >= 0.0 && d < 14.0 && e < 14.0 && this.handler.onButtonClick(this.client.player, n)) {
-                        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-//                        this.client.interactionManager.clickButton(this.handler.syncId, n);
+                    if (d >= 0.0 && e >= 0.0 && d < 14.0 && e < 14.0) {
+                        List<RegistryEntry<BannerPattern>> availablePatterns = this.handler.getBannerPatterns();
+                        int handlerIndex = IntStream.range(0, availablePatterns.size())
+                                .filter(variable -> availablePatterns.get(variable).equals(this.allPatterns.get(n)))
+                                .findFirst().orElse(-1);
+                        if (handlerIndex!=-1 && this.handler.onButtonClick(this.client.player, handlerIndex)){
+                            MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
+                            this.selectedPattern = n;
+                            this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
                         return true;
-                    }
+                    }}
                 }
             }
 
@@ -274,10 +289,10 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
     @Override
     public boolean mouseDragged(Click click, double offsetX, double offsetY) {
-        int i = this.getRows() - 4;
+        int i = this.getRows() - 7;
         if (this.scrollbarClicked && this.canApplyDyePattern && i > 0) {
             int j = this.y + 13;
-            int k = j + 56;
+            int k = j + 98;
             this.scrollPosition = ((float)click.y() - j - 7.5F) / (k - j - 15.0F);
             this.scrollPosition = MathHelper.clamp(this.scrollPosition, 0.0F, 1.0F);
             this.visibleTopRow = Math.max((int)(this.scrollPosition * i + 0.5), 0);
@@ -318,9 +333,9 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
         ItemStack itemStack2 = this.handler.getBannerSlot().getStack();
         ItemStack itemStack3 = this.handler.getDyeSlot().getStack();
-        // if (!itemStack3.isEmpty() && itemStack3.getItem() instanceof DyeItem dyeItem) {
-        //     selectedDye = dyeItem.getColor();
-        // }
+         if (!itemStack3.isEmpty() && itemStack3.getItem() instanceof DyeItem dyeItem) {
+             selectedDye = dyeItem.getColor();
+         }
 
         ItemStack itemStack4 = this.handler.getPatternSlot().getStack();
         BannerPatternsComponent bannerPatternsComponent = (BannerPatternsComponent)itemStack2.getOrDefault(

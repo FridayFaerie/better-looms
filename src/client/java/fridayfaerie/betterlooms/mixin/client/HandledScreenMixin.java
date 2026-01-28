@@ -49,23 +49,23 @@ public abstract class HandledScreenMixin<T extends ScreenHandler> {
 
 				switch (slot.id) {
 					case 0 -> {
-						acc.setX(6);
-						acc.setY(16);
+						acc.setX(8);
+						acc.setY(34);
 					}   // banner
 					case 1 -> {
-						acc.setX(6);
-						acc.setY(36);
+						acc.setX(8);
+						acc.setY(59);
 					}   // dye
 					case 2 -> {
-						acc.setX(6);
-						acc.setY(56);
+						acc.setX(8);
+						acc.setY(84);
 					}   // pattern
 					case 3 -> {
-						acc.setX(143);
-						acc.setY(100);
+						acc.setX(146);
+						acc.setY(101);
 					}
 					default -> {
-						acc.setY(acc.getY()+45);
+						acc.setY(acc.getY()+44);
 					}
 				}
 			}
