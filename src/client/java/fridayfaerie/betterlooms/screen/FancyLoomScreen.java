@@ -35,6 +35,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.BannerPatternTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.LoomScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
@@ -95,10 +96,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         super.init();
 
 
-//        allPatterns = (List<RegistryEntry<BannerPattern>>)this.handler.bannerPatternLookup
-//                .getOptional(BannerPatternTags.NO_ITEM_REQUIRED)
-//                .map(ImmutableList::copyOf)
-//                .orElse(ImmutableList.of());
+
         var networkHandler = MinecraftClient.getInstance().getNetworkHandler();
         if (networkHandler != null) {
             var registry = networkHandler
@@ -198,7 +196,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             int n = i + 60;
             int l = j + 15;
             List<RegistryEntry.Reference<BannerPattern>> list = this.allPatterns;
-//            List<RegistryEntry<BannerPattern>> list = this.allPatterns;
 
 
             label64:
@@ -255,7 +252,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         this.scrollbarClicked = false;
         if (this.canApplyDyePattern) {
             int i = this.x + 60;
-            int j = this.y + 13;
+            int j = this.y + 15;
 
             for (int k = 0; k < 7; k++) {
                 for (int l = 0; l < 4; l++) {
@@ -263,17 +260,53 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                     double e = click.y() - (j + k * 14);
                     int m = k + this.visibleTopRow;
                     int n = m * 4 + l;
+
+
+                    RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
+                    boolean inAvailable = this.handler.getBannerPatterns().contains(targetPattern);
+
                     if (d >= 0.0 && e >= 0.0 && d < 14.0 && e < 14.0) {
+                        if (!inAvailable){
+                            Slot patternSlot = this.handler.getPatternSlot();
+                            if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
+                                int itemSlot = findPatternSlot(targetPattern);
+                                if (itemSlot != -1){
+                                    swapSlots(itemSlot, patternSlot.id);
+                                } else {
+                                    return true;
+                                }
+                            } else {
+                                if (patternSlot.hasStack()){
+                                    this.client.interactionManager.clickSlot(this.handler.syncId,
+                                            patternSlot.id,0,
+                                            SlotActionType.QUICK_MOVE,this.client.player
+                                    );
+                                }
+                            }
+                        }
+                        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
+                        this.selectedPattern = n;
                         List<RegistryEntry<BannerPattern>> availablePatterns = this.handler.getBannerPatterns();
                         int handlerIndex = IntStream.range(0, availablePatterns.size())
-                                .filter(variable -> availablePatterns.get(variable).equals(this.allPatterns.get(n)))
+                                .filter(variable -> availablePatterns.get(variable).equals(targetPattern))
                                 .findFirst().orElse(-1);
-                        if (handlerIndex!=-1 && this.handler.onButtonClick(this.client.player, handlerIndex)){
-                            MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                            this.selectedPattern = n;
-                            this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
+                        this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
+
+                        this.client.interactionManager.clickSlot(
+                                this.handler.syncId,3,0,
+                                SlotActionType.PICKUP,this.client.player
+                        );
+                        this.client.interactionManager.clickSlot(
+                                this.handler.syncId,0,0,
+                                SlotActionType.QUICK_MOVE,this.client.player
+                        );
+                        this.client.interactionManager.clickSlot(
+                                this.handler.syncId,0,0,
+                                SlotActionType.PICKUP,this.client.player
+                        );
+
                         return true;
-                    }}
+                    }
                 }
             }
 
@@ -307,7 +340,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         if (super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return true;
         } else {
-            int i = this.getRows() - 4;
+            int i = this.getRows() - 7;
             if (this.canApplyDyePattern && i > 0) {
                 float f = (float)verticalAmount / i;
                 this.scrollPosition = MathHelper.clamp(this.scrollPosition - f, 0.0F, 1.0F);
@@ -363,8 +396,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private int findDyeSlot(DyeColor dyeColor) {
         for (int i = 0; i < this.handler.slots.size(); i++) {
             Slot slot = this.handler.slots.get(i);
-
-            // Only search player inventory slots
             if (slot.inventory == this.client.player.getInventory()) {
                 ItemStack stack = slot.getStack();
                 if (stack.getItem() instanceof DyeItem dyeItem && dyeItem.getColor() == dyeColor) {
@@ -375,33 +406,34 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         return -1;
     }
 
-    private boolean isHiddenSlot(Slot slot) {
-        // Loom slots: banner = 0, dye = 1, pattern = 2
-        return slot.id == 0 || slot.id == 1 || slot.id == 2;
+    private void swapSlots(int originSlot, int targetSlot) {
+        this.client.interactionManager.clickSlot(this.handler.syncId,
+                originSlot,0,
+                SlotActionType.PICKUP,this.client.player
+        );
+        this.client.interactionManager.clickSlot(this.handler.syncId,
+                targetSlot,0,
+                SlotActionType.PICKUP,this.client.player
+        );
+        this.client.interactionManager.clickSlot(this.handler.syncId,
+                originSlot,0,
+                SlotActionType.PICKUP,this.client.player
+        );
     }
 
-    private void swapSlots(int originSlot, int targetSlot) {
-        this.client.interactionManager.clickSlot(
-                this.handler.syncId,
-                originSlot,
-                0,
-                SlotActionType.PICKUP,
-                this.client.player
-        );
-        this.client.interactionManager.clickSlot(
-                this.handler.syncId,
-                targetSlot,
-                0,
-                SlotActionType.PICKUP,
-                this.client.player
-        );
-        this.client.interactionManager.clickSlot(
-                this.handler.syncId,
-                originSlot,
-                0,
-                SlotActionType.PICKUP,
-                this.client.player
-        );
+    private int findPatternSlot(RegistryEntry<BannerPattern> pattern) {
+        for (int i = 0; i < this.handler.slots.size(); i++) {
+            Slot slot = this.handler.slots.get(i);
+            if (slot.inventory == this.client.player.getInventory()) {
+                TagKey<BannerPattern> provides =
+                        slot.getStack().get(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
+                if (provides !=null && pattern.isIn(provides)) {
+                    return slot.id;
+                }
+            }
+        }
+        return -1;
     }
+
 
 }
