@@ -1,39 +1,39 @@
 {
-	"schemaVersion": 1,
-	"id": "better-looms",
-	"version": "${version}",
-	"name": "Better Looms",
-	"description": "This is an example description! Tell everyone what your mod is about!",
-	"authors": [
-		"Me!"
-	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
-	"license": "CC0-1.0",
-	"icon": "assets/better-looms/icon.png",
-	"environment": "*",
-	"accessWidener": "better-looms.accesswidener",
-	"entrypoints": {
-		"main": [
-			"fridayfaerie.betterlooms.BetterLooms"
-		],
-		"client": [
-			"fridayfaerie.betterlooms.BetterLoomsClient"
-		]
-	},
-	"mixins": [
-		"better-looms.mixins.json",
-		{
-			"config": "better-looms.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.18.4",
-		"minecraft": "~1.21.10",
-		"java": ">=21",
-		"fabric-api": "*"
-	}
+  "schemaVersion": 1,
+  "id": "better-looms",
+  "version": "${version}",
+  "name": "Better Looms",
+  "description": "Mod to improve upon the native loom UI",
+  "authors": [
+    "FridayFaerie"
+  ],
+  "contact": {
+    "homepage": "https://github.com/FridayFaerie/better-looms",
+    "sources": "https://github.com/FridayFaerie/better-looms"
+  },
+  "license": "MIT",
+  "icon": "assets/better-looms/icon.png",
+  "environment": "*",
+  "accessWidener": "better-looms.accesswidener",
+  "entrypoints": {
+    "main": [
+      "fridayfaerie.betterlooms.BetterLooms"
+    ],
+    "client": [
+      "fridayfaerie.betterlooms.BetterLoomsClient"
+    ]
+  },
+  "mixins": [
+    "better-looms.mixins.json",
+    {
+      "config": "better-looms.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.10",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
 }
