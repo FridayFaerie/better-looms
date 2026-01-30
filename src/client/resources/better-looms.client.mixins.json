@@ -3,6 +3,7 @@
 	"package": "fridayfaerie.betterlooms.mixin.client",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"BannerResultGuiElementRenderStateMixin",
 		"HandledScreensMixin",
 		"HandledScreenMixin",
 		"SlotAccessor"
