@@ -14,11 +14,6 @@ clicking on "blank" pattern brings in a blank banner of that colour.
 
 TODO: 
 - redraw new GUI background
-- if someone selects to not auto complete the pattern, GUI should be different too
-
-Longer term TODO:
-- maybe include some way to save complete banners with multiple patterns, and create them in one go
-- maybe a way to use keyboard to type out banners? would be cool
 
 
 
