@@ -7,11 +7,11 @@ minecraft mod that improves on banner GUI.
 
 clicking on colours moves dye into appropriate slot.
 clicking on banner pattern automatically completes the pattern, brings the output back into the input slot
+clicking on "blank" pattern brings in a blank banner of that colour.
 
 
 
 TODO: 
-- clicking on the "blank" banner pattern option should bring up a new banner
 - create config options for auto output-into-input or not
 - redraw new GUI background
 - render the banner display thingie

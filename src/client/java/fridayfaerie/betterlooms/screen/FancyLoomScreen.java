@@ -31,6 +31,7 @@ import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.BannerItem;
 import net.minecraft.item.DyeItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -131,13 +132,21 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             final int y = buttonY + (index / 2) * 13;
             index++;
             DyeButtonWidget dyeButton = new DyeButtonWidget(
-
                     x, y, dyeColor, () -> selectedDye == dyeColor,
                     button -> {
+
+                        if (selectedDye == dyeColor) {
+                            return;
+                        };
+                        selectedDye = dyeColor;
                         int dyeSlot = findDyeSlot(dyeColor);
                         if (dyeSlot != -1) {
                             swapSlots(dyeSlot, 1);
-                            selectedDye = dyeColor;
+                        } else {
+                            this.client.interactionManager.clickSlot(this.handler.syncId,
+                                    1,0,
+                                    SlotActionType.QUICK_MOVE,this.client.player
+                            );
                         }
                     }
             );
@@ -216,7 +225,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                         identifier2 = PATTERN_SELECTED_TEXTURE;
                     } else if (bl) {
                         identifier2 = PATTERN_HIGHLIGHTED_TEXTURE;
-                        DyeColor dyeColor2 = ((DyeItem)this.dye.getItem()).getColor();
+//                        DyeColor dyeColor2 = ((DyeItem)this.dye.getItem()).getColor();
+                        DyeColor dyeColor2 = selectedDye;
                         context.drawTooltip(Text.translatable(((BannerPattern)registryEntry.value()).translationKey() + "." + dyeColor2.getId()), mouseX, mouseY);
                     } else {
                         identifier2 = PATTERN_TEXTURE;
@@ -269,11 +279,19 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                         if (!inAvailable){
                             Slot patternSlot = this.handler.getPatternSlot();
                             if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
-                                int itemSlot = findPatternSlot(targetPattern);
-                                if (itemSlot != -1){
-                                    swapSlots(itemSlot, patternSlot.id);
+                                if (targetPattern.streamTags().toList().isEmpty()){
+                                    int itemSlot = findBannerSlot(selectedDye);
+                                    if (itemSlot!=-1) {
+                                        swapSlots(itemSlot, this.handler.getBannerSlot().id);
+                                        return true;
+                                    }
                                 } else {
-                                    return true;
+                                    int itemSlot = findPatternSlot(targetPattern);
+                                    if (itemSlot != -1) {
+                                        swapSlots(itemSlot, patternSlot.id);
+                                    } else {
+                                        return true;
+                                    }
                                 }
                             } else {
                                 if (patternSlot.hasStack()){
@@ -380,7 +398,9 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         }
 
         if (!ItemStack.areEqual(itemStack2, this.banner) || !ItemStack.areEqual(itemStack3, this.dye) || !ItemStack.areEqual(itemStack4, this.pattern)) {
-            this.canApplyDyePattern = !itemStack2.isEmpty() && !itemStack3.isEmpty() && !this.hasTooManyPatterns && !this.handler.getBannerPatterns().isEmpty();
+            // TODO: maybe clean this up, remove it
+            this.canApplyDyePattern = true;
+//            this.canApplyDyePattern = !itemStack2.isEmpty() && !itemStack3.isEmpty() && !this.hasTooManyPatterns && !this.handler.getBannerPatterns().isEmpty();
         }
 
         if (this.visibleTopRow >= this.getRows()) {
@@ -428,6 +448,19 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                 TagKey<BannerPattern> provides =
                         slot.getStack().get(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
                 if (provides !=null && pattern.isIn(provides)) {
+                    return slot.id;
+                }
+            }
+        }
+        return -1;
+    }
+    private int findBannerSlot(DyeColor selectedDye) {
+        for (int i = 0; i < this.handler.slots.size(); i++) {
+            Slot slot = this.handler.slots.get(i);
+            if (slot.inventory == this.client.player.getInventory()) {
+                if (slot.getStack().getItem() instanceof BannerItem bannerItem
+                        && bannerItem.getColor()==selectedDye
+                        && slot.getStack().get(DataComponentTypes.BANNER_PATTERNS).layers().isEmpty()){
                     return slot.id;
                 }
             }

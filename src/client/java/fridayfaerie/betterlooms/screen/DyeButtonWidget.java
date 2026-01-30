@@ -2,8 +2,6 @@ package fridayfaerie.betterlooms.screen;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 
@@ -30,12 +28,9 @@ public class DyeButtonWidget extends ButtonWidget {
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        // draw vanilla button background first
         super.renderWidget(context, mouseX, mouseY, delta);
 
-        // tint overlay
-//        int rgb = dyeColor.getEntityColor();
-//        int argb = 0xFF000000 | rgb;
+
         float brightness = this.isHovered() ? 1.15f : 1.0f;
         int rgb = dyeColor.getEntityColor();
 
@@ -66,13 +61,9 @@ public class DyeButtonWidget extends ButtonWidget {
         int w = getWidth();
         int h = getHeight();
 
-        // top
         context.fill(x, y, x + w, y + 1, color);
-        // bottom
         context.fill(x, y + h - 1, x + w, y + h, color);
-        // left
         context.fill(x, y, x + 1, y + h, color);
-        // right
         context.fill(x + w - 1, y, x + w, y + h, color);
     }
 
