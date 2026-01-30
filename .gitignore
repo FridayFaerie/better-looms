@@ -41,3 +41,6 @@ replay_*.log
 
 # gimp
 *.xcf
+
+# random things I don't wanna track
+test*
