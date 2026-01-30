@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import fridayfaerie.betterlooms.BetterLoomsClient;
+import fridayfaerie.betterlooms.config.BetterLoomsConfig;
+import fridayfaerie.betterlooms.mixin.client.SlotAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BannerPattern;
@@ -88,8 +90,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     protected void init() {
         super.init();
 
-
-
         var networkHandler = MinecraftClient.getInstance().getNetworkHandler();
         if (networkHandler != null) {
             var registry = networkHandler
@@ -102,14 +102,44 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         }
 
 
-        this.x = 152;
-        this.y = 2;
-        this.backgroundWidth = 176;
-        this.backgroundHeight = 216;
-        this.titleX = 8;
-        this.titleY = 6;
-        this.playerInventoryTitleX = 8;
-        this.playerInventoryTitleY = this.backgroundHeight - 98;
+        this.backgroundWidth = 176 + 23*2;
+        this.backgroundHeight = 166;
+        this.x = (this.width - this.backgroundWidth) / 2;
+        this.y = (this.height - this.backgroundHeight) / 2;
+//        this.titleX = 8;
+//        this.titleY = 6;
+//        this.playerInventoryTitleX = 8;
+//        this.playerInventoryTitleY = this.backgroundHeight - 98;
+
+        for (Slot slot : handler.slots) {
+            SlotAccessor acc = (SlotAccessor) slot;
+
+            switch (slot.id) {
+                case 0 -> {
+                    acc.setX(BetterLoomsClient.CONFIG.a1);
+                    acc.setY(BetterLoomsClient.CONFIG.a2);
+                }
+                case 1 -> {
+                    acc.setX(BetterLoomsClient.CONFIG.a3);
+                    acc.setY(BetterLoomsClient.CONFIG.a4);
+                }
+                case 2 -> {
+                    acc.setX(BetterLoomsClient.CONFIG.a5);
+                    acc.setY(BetterLoomsClient.CONFIG.a6);
+                }
+                case 3 -> {
+                    acc.setX(BetterLoomsClient.CONFIG.a7);
+                    acc.setY(BetterLoomsClient.CONFIG.a8);
+                }
+                default -> {
+                    acc.setY(acc.getY()+1);
+                    acc.setX(acc.getX()+23);
+                }
+            }
+        }
+
+
+
 
         ModelPart modelPart = this.client.getLoadedEntityModels().getModelPart(EntityModelLayers.STANDING_BANNER_FLAG);
         this.bannerField = new BannerFlagBlockModel(modelPart);
@@ -163,7 +193,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     protected void drawBackground(DrawContext context, float deltaTicks, int mouseX, int mouseY) {
         int i = this.x;
         int j = this.y;
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth+30, this.backgroundHeight, 256, 256);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
         Slot slot = this.handler.getBannerSlot();
         Slot slot2 = this.handler.getDyeSlot();
