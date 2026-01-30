@@ -11,8 +11,8 @@ clicking on "blank" pattern brings in a blank banner of that colour.
 
 
 
+
 TODO: 
-- create config options for auto output-into-input or not
 - redraw new GUI background
 - render the banner display thingie
 

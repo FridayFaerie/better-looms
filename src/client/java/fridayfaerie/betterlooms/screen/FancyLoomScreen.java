@@ -1,25 +1,18 @@
 package fridayfaerie.betterlooms.screen;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.google.common.collect.ImmutableList;
-import fridayfaerie.betterlooms.BetterLooms;
+import fridayfaerie.betterlooms.BetterLoomsClient;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.block.entity.BannerPatterns;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.block.entity.model.BannerFlagBlockModel;
@@ -31,7 +24,6 @@ import net.minecraft.component.type.BannerPatternsComponent;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.BannerItem;
 import net.minecraft.item.DyeItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -310,18 +302,20 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                                 .findFirst().orElse(-1);
                         this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
 
-                        this.client.interactionManager.clickSlot(
-                                this.handler.syncId,3,0,
-                                SlotActionType.PICKUP,this.client.player
-                        );
-                        this.client.interactionManager.clickSlot(
-                                this.handler.syncId,0,0,
-                                SlotActionType.QUICK_MOVE,this.client.player
-                        );
-                        this.client.interactionManager.clickSlot(
-                                this.handler.syncId,0,0,
-                                SlotActionType.PICKUP,this.client.player
-                        );
+                        if (BetterLoomsClient.CONFIG.enableInstantcomplete) {
+                            this.client.interactionManager.clickSlot(
+                                    this.handler.syncId, 3, 0,
+                                    SlotActionType.PICKUP, this.client.player
+                            );
+                            this.client.interactionManager.clickSlot(
+                                    this.handler.syncId, 0, 0,
+                                    SlotActionType.QUICK_MOVE, this.client.player
+                            );
+                            this.client.interactionManager.clickSlot(
+                                    this.handler.syncId, 0, 0,
+                                    SlotActionType.PICKUP, this.client.player
+                            );
+                        }
 
                         return true;
                     }

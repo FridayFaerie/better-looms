@@ -21,6 +21,9 @@
     ],
     "client": [
       "fridayfaerie.betterlooms.BetterLoomsClient"
+    ],
+    "modmenu": [
+      "fridayfaerie.betterlooms.config.ModMenuIntegration"
     ]
   },
   "mixins": [
