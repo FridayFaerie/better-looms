@@ -13,7 +13,7 @@ clicking on "blank" pattern brings in a blank banner of that colour.
 
 
 TODO: 
-- redraw new GUI background
+- add finishing touches to GUI
 
 
 

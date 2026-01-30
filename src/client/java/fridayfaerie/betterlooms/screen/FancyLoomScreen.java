@@ -59,8 +59,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private static final int SCROLLBAR_HEIGHT = 15;
     private static final int PATTERN_ENTRY_SIZE = 14;
     private static final int SCROLLBAR_AREA_HEIGHT = 56;
-    private static final int PATTERN_LIST_OFFSET_X = 60;
-    private static final int PATTERN_LIST_OFFSET_Y = 13;
+    private static final int PATTERN_LIST_OFFSET_X = BetterLoomsClient.CONFIG.a3;
+    private static final int PATTERN_LIST_OFFSET_Y = BetterLoomsClient.CONFIG.a4;
     private static final float field_59943 = 64.0F;
     private static final float field_59944 = 21.0F;
     private static final float field_59945 = 40.0F;
@@ -102,38 +102,38 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         }
 
 
-        this.backgroundWidth = 176 + 23*2;
-        this.backgroundHeight = 166;
+        this.backgroundWidth = 176;
+        this.backgroundHeight = 217;
         this.x = (this.width - this.backgroundWidth) / 2;
         this.y = (this.height - this.backgroundHeight) / 2;
-//        this.titleX = 8;
-//        this.titleY = 6;
-//        this.playerInventoryTitleX = 8;
-//        this.playerInventoryTitleY = this.backgroundHeight - 98;
+//        this.titleX = this.titleX;
+        this.titleY = 6;
+//        this.playerInventoryTitleX = this.playerInventoryTitleX;
+        this.playerInventoryTitleY = this.backgroundHeight - 92;
 
         for (Slot slot : handler.slots) {
             SlotAccessor acc = (SlotAccessor) slot;
 
             switch (slot.id) {
                 case 0 -> {
-                    acc.setX(BetterLoomsClient.CONFIG.a1);
-                    acc.setY(BetterLoomsClient.CONFIG.a2);
+                    acc.setX(152);
+                    acc.setY(115);
                 }
                 case 1 -> {
-                    acc.setX(BetterLoomsClient.CONFIG.a3);
-                    acc.setY(BetterLoomsClient.CONFIG.a4);
+                    acc.setX(116);
+                    acc.setY(115);
                 }
                 case 2 -> {
-                    acc.setX(BetterLoomsClient.CONFIG.a5);
-                    acc.setY(BetterLoomsClient.CONFIG.a6);
+                    acc.setX(134);
+                    acc.setY(115);
                 }
                 case 3 -> {
-                    acc.setX(BetterLoomsClient.CONFIG.a7);
-                    acc.setY(BetterLoomsClient.CONFIG.a8);
+                    acc.setX(180);
+                    acc.setY(0);
                 }
                 default -> {
-                    acc.setY(acc.getY()+1);
-                    acc.setX(acc.getX()+23);
+//                    acc.setX(acc.getX());
+                    acc.setY(acc.getY()+51);
                 }
             }
         }
@@ -145,8 +145,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         this.bannerField = new BannerFlagBlockModel(modelPart);
 
 
-        int buttonX = this.x + 28;
-        int buttonY = this.y + 13;
+        int buttonX = this.x + BetterLoomsClient.CONFIG.a1;
+        int buttonY = this.y + BetterLoomsClient.CONFIG.a2;
 
         int index = 0;
         for (DyeColor dyeColor : DyeColor.values()) {
@@ -213,19 +213,19 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
         int k = (int)(84.0F * this.scrollPosition);
         Identifier identifier = this.canApplyDyePattern ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i + 119, j + 13 + k, 12, 15);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i + BetterLoomsClient.CONFIG.a5, j + 13 + k, 12, 15);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
              DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
-            int l = i + 144;
-            int m = j + 30;
-            context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 30, m + 60);
+            int l = i + 117;
+            int m = j + 9;
+            context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 50, m + 100);
         } else if (this.hasTooManyPatterns) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, i + slot4.x - 5, j + slot4.y - 5, 26, 26);
         }
 
         if (this.canApplyDyePattern) {
-            int n = i + 60;
-            int l = j + 15;
+            int n = i + BetterLoomsClient.CONFIG.a3;
+            int l = j + BetterLoomsClient.CONFIG.a4;
             List<RegistryEntry.Reference<BannerPattern>> list = this.allPatterns;
 
 
@@ -283,8 +283,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     public boolean mouseClicked(Click click, boolean doubled) {
         this.scrollbarClicked = false;
         if (this.canApplyDyePattern) {
-            int i = this.x + 60;
-            int j = this.y + 15;
+            int i = this.x + BetterLoomsClient.CONFIG.a3;
+            int j = this.y + BetterLoomsClient.CONFIG.a4;
 
             for (int k = 0; k < 7; k++) {
                 for (int l = 0; l < 4; l++) {
@@ -352,7 +352,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                 }
             }
 
-            i = this.x + 119;
+            i = this.x + BetterLoomsClient.CONFIG.a5;
             j = this.y + 9;
             if (click.x() >= i && click.x() < i + 12 && click.y() >= j && click.y() < j + 56) {
                 this.scrollbarClicked = true;

@@ -10,6 +10,6 @@ public abstract class BannerResultGuiElementRenderStateMixin {
 
     @ModifyReturnValue(method = "scale", at = @At("RETURN"))
     private float loomBiggerScale(float original) {
-        return original * 1.5F;
+        return 40.0F;
     }
 }
