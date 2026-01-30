@@ -208,11 +208,11 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         }
 
         int k = (int)(83.0F * this.scrollPosition);
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SCROLLER_TEXTURE, i + BetterLoomsClient.CONFIG.a5, j + 19 + k, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SCROLLER_TEXTURE, i + 100, j + 19 + k, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
              DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
             int l = i + 118;
-            int m = j + BetterLoomsClient.CONFIG.a6;
+            int m = j + 28;
             context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 50, m + 100);
         } else if (this.hasTooManyPatterns) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, i + slot4.x - 5, j + slot4.y - 5, 26, 26);
@@ -339,7 +339,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             }
         }
 
-        i = this.x + BetterLoomsClient.CONFIG.a5;
+        i = this.x + 100;
         j = this.y + 19;
         if (click.x() >= i && click.x() < i + 12 && click.y() >= j && click.y() < j + SCROLLBAR_AREA_HEIGHT) {
           this.scrollbarClicked = true;
