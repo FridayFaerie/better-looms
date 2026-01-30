@@ -126,8 +126,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             DyeButtonWidget dyeButton = new DyeButtonWidget(
                     x, y, dyeColor, () -> selectedDye == dyeColor,
                     button -> {
-
-                        if (selectedDye == dyeColor) {
+                        Slot slot2 = this.handler.getDyeSlot();
+                        if (slot2.hasStack() && ((DyeItem)slot2.getStack().getItem()).getColor() == dyeColor) {
                             return;
                         };
                         selectedDye = dyeColor;
@@ -185,9 +185,9 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         Identifier identifier = this.canApplyDyePattern ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
         context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i + 119, j + 13 + k, 12, 15);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
-             DyeColor dyeColor = ((BannerItem)slot4.getStack().getItem()).getColor();
+             DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
             int l = i + 144;
-            int m = j + 29;
+            int m = j + 30;
             context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 20, m + 40);
         } else if (this.hasTooManyPatterns) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, i + slot4.x - 5, j + slot4.y - 5, 26, 26);
@@ -369,7 +369,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     }
 
     private void onInventoryChanged() {
-        ItemStack itemStack = this.handler.getOutputSlot().getStack();
+        ItemStack itemStack = this.handler.getBannerSlot().getStack();
         if (itemStack.isEmpty()) {
             this.bannerPatterns = null;
         } else {
