@@ -1,25 +1,20 @@
 package fridayfaerie.betterlooms.screen;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import com.google.common.collect.ImmutableList;
-import fridayfaerie.betterlooms.BetterLooms;
+import fridayfaerie.betterlooms.BetterLoomsClient;
+import fridayfaerie.betterlooms.config.BetterLoomsConfig;
+import fridayfaerie.betterlooms.mixin.client.SlotAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BannerPattern;
-import net.minecraft.block.entity.BannerPatterns;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.block.entity.model.BannerFlagBlockModel;
@@ -58,14 +53,16 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private static final Identifier PATTERN_TEXTURE = Identifier.ofVanilla("container/loom/pattern");
     private static final Identifier ERROR_TEXTURE = Identifier.ofVanilla("container/loom/error");
     private static final Identifier TEXTURE = Identifier.of("better-looms", "textures/gui/fancy_loom_gui.png");
+    private static final int PATTERN_LIST_ROWS = 7;
     private static final int PATTERN_LIST_COLUMNS = 4;
-    private static final int PATTERN_LIST_ROWS = 4;
     private static final int SCROLLBAR_WIDTH = 12;
     private static final int SCROLLBAR_HEIGHT = 15;
     private static final int PATTERN_ENTRY_SIZE = 14;
-    private static final int SCROLLBAR_AREA_HEIGHT = 56;
-    private static final int PATTERN_LIST_OFFSET_X = 60;
-    private static final int PATTERN_LIST_OFFSET_Y = 13;
+    private static final int SCROLLBAR_AREA_HEIGHT = 98;
+    private static final int COLOR_LIST_OFFSET_X = 8;
+    private static final int COLOR_LIST_OFFSET_Y = 16;
+    private static final int PATTERN_LIST_OFFSET_X = 41;
+    private static final int PATTERN_LIST_OFFSET_Y = 19;
     private static final float field_59943 = 64.0F;
     private static final float field_59944 = 21.0F;
     private static final float field_59945 = 40.0F;
@@ -75,7 +72,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private ItemStack banner = ItemStack.EMPTY;
     private ItemStack dye = ItemStack.EMPTY;
     private ItemStack pattern = ItemStack.EMPTY;
-    private boolean canApplyDyePattern;
     private boolean hasTooManyPatterns;
     private float scrollPosition;
     private boolean scrollbarClicked;
@@ -83,7 +79,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     private DyeColor selectedDye = DyeColor.WHITE;
     private int selectedPattern = 0;
     private List<RegistryEntry.Reference<BannerPattern>> allPatterns = List.of();
-
 
     public FancyLoomScreen(LoomScreenHandler screenHandler, PlayerInventory inventory, Text title) {
         super(screenHandler, inventory, title);
@@ -94,8 +89,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     @Override
     protected void init() {
         super.init();
-
-
 
         var networkHandler = MinecraftClient.getInstance().getNetworkHandler();
         if (networkHandler != null) {
@@ -108,41 +101,75 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             );
         }
 
-
-        this.x = 152;
-        this.y = 2;
         this.backgroundWidth = 176;
-        this.backgroundHeight = 216;
-        this.titleX = 8;
+        this.backgroundHeight = 217;
+        this.x = (this.width - this.backgroundWidth) / 2;
+        this.y = (this.height - this.backgroundHeight) / 2;
+//        this.titleX = this.titleX;
         this.titleY = 6;
-        this.playerInventoryTitleX = 8;
-        this.playerInventoryTitleY = this.backgroundHeight - 98;
+//        this.playerInventoryTitleX = this.playerInventoryTitleX;
+        this.playerInventoryTitleY = this.backgroundHeight - 92;
+
+        for (Slot slot : handler.slots) {
+            SlotAccessor acc = (SlotAccessor) slot;
+
+            switch (slot.id) {
+                case 0 -> {
+                    acc.setX(154);
+                    acc.setY(7);
+                }
+                case 1 -> {
+                    acc.setX(118);
+                    acc.setY(7);
+                }
+                case 2 -> {
+                    acc.setX(136);
+                    acc.setY(7);
+                }
+                case 3 -> {
+                    acc.setX(180);
+                    acc.setY(0);
+                }
+                default -> {
+//                    acc.setX(acc.getX());
+                    acc.setY(acc.getY()+51);
+                }
+            }
+        }
+
 
         ModelPart modelPart = this.client.getLoadedEntityModels().getModelPart(EntityModelLayers.STANDING_BANNER_FLAG);
         this.bannerField = new BannerFlagBlockModel(modelPart);
 
 
-        int buttonX = this.x + 28;
-        int buttonY = this.y + 13;
+        int buttonX = this.x + COLOR_LIST_OFFSET_X;
+        int buttonY = this.y + COLOR_LIST_OFFSET_Y;
 
         int index = 0;
         for (DyeColor dyeColor : DyeColor.values()) {
-            final int x = buttonX + (index % 2) * 14;
+            final int x = buttonX + (index % 2) * 13;
             final int y = buttonY + (index / 2) * 13;
             index++;
             DyeButtonWidget dyeButton = new DyeButtonWidget(
-
                     x, y, dyeColor, () -> selectedDye == dyeColor,
                     button -> {
+                        Slot slot2 = this.handler.getDyeSlot();
+                        if (slot2.hasStack() && ((DyeItem)slot2.getStack().getItem()).getColor() == dyeColor) {
+                            return;
+                        };
+                        selectedDye = dyeColor;
                         int dyeSlot = findDyeSlot(dyeColor);
                         if (dyeSlot != -1) {
                             swapSlots(dyeSlot, 1);
-                            selectedDye = dyeColor;
+                        } else {
+                            this.client.interactionManager.clickSlot(this.handler.syncId,
+                                    1,0,
+                                    SlotActionType.QUICK_MOVE,this.client.player
+                            );
                         }
                     }
             );
             this.addDrawableChild(dyeButton);
-
         }
 
 
@@ -155,14 +182,14 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     }
 
     private int getRows() {
-        return MathHelper.ceilDiv(this.allPatterns.size(), 4);
+        return MathHelper.ceilDiv(this.allPatterns.size(), PATTERN_LIST_COLUMNS);
     }
 
     @Override
     protected void drawBackground(DrawContext context, float deltaTicks, int mouseX, int mouseY) {
         int i = this.x;
         int j = this.y;
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth+30, this.backgroundHeight, 256, 256);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, TEXTURE, i, j, 0.0F, 0.0F, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
         Slot slot = this.handler.getBannerSlot();
         Slot slot2 = this.handler.getDyeSlot();
@@ -180,52 +207,49 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, PATTERN_SLOT_TEXTURE, i + slot3.x, j + slot3.y, 16, 16);
         }
 
-        int k = (int)(84.0F * this.scrollPosition);
-        Identifier identifier = this.canApplyDyePattern ? SCROLLER_TEXTURE : SCROLLER_DISABLED_TEXTURE;
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier, i + 119, j + 13 + k, 12, 15);
+        int k = (int)(83.0F * this.scrollPosition);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SCROLLER_TEXTURE, i + 100, j + 19 + k, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
-             DyeColor dyeColor = ((BannerItem)slot4.getStack().getItem()).getColor();
-            int l = i + 144;
-            int m = j + 29;
-            context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 20, m + 40);
+             DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
+            int l = i + 118;
+            int m = j + 28;
+            context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 50, m + 100);
         } else if (this.hasTooManyPatterns) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, i + slot4.x - 5, j + slot4.y - 5, 26, 26);
         }
 
-        if (this.canApplyDyePattern) {
-            int n = i + 60;
-            int l = j + 15;
-            List<RegistryEntry.Reference<BannerPattern>> list = this.allPatterns;
+        int n = i + PATTERN_LIST_OFFSET_X;
+        int l = j + PATTERN_LIST_OFFSET_Y;
+        List<RegistryEntry.Reference<BannerPattern>> list = this.allPatterns;
 
 
-            label64:
-            for (int o = 0; o < 7; o++) {
-                for (int p = 0; p < 4; p++) {
-                    int q = o + this.visibleTopRow;
-                    int r = q * 4 + p;
-                    if (r >= list.size()) {
-                        break label64;
-                    }
-
-                    int s = n + p * 14;
-                    int t = l + o * 14;
-                    RegistryEntry<BannerPattern> registryEntry = (RegistryEntry<BannerPattern>)list.get(r);
-                    boolean bl = mouseX >= s && mouseY >= t && mouseX < s + 14 && mouseY < t + 14;
-                    Identifier identifier2;
-                    if (r == this.selectedPattern) {
-                        identifier2 = PATTERN_SELECTED_TEXTURE;
-                    } else if (bl) {
-                        identifier2 = PATTERN_HIGHLIGHTED_TEXTURE;
-                        DyeColor dyeColor2 = ((DyeItem)this.dye.getItem()).getColor();
-                        context.drawTooltip(Text.translatable(((BannerPattern)registryEntry.value()).translationKey() + "." + dyeColor2.getId()), mouseX, mouseY);
-                    } else {
-                        identifier2 = PATTERN_TEXTURE;
-                    }
-
-                    context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier2, s, t, 14, 14);
-                    Sprite sprite = context.getSprite(TexturedRenderLayers.getBannerPatternTextureId(registryEntry));
-                    this.drawBanner(context, s, t, sprite);
+        label64:
+        for (int o = 0; o < PATTERN_LIST_ROWS; o++) {
+            for (int p = 0; p < PATTERN_LIST_COLUMNS; p++) {
+                int q = o + this.visibleTopRow;
+                int r = q * PATTERN_LIST_COLUMNS + p;
+                if (r >= list.size()) {
+                    break label64;
                 }
+
+                int s = n + p * PATTERN_ENTRY_SIZE;
+                int t = l + o * PATTERN_ENTRY_SIZE;
+                RegistryEntry<BannerPattern> registryEntry = (RegistryEntry<BannerPattern>)list.get(r);
+                boolean bl = mouseX >= s && mouseY >= t && mouseX < s + PATTERN_ENTRY_SIZE && mouseY < t + PATTERN_ENTRY_SIZE;
+                Identifier identifier2;
+                if (r == this.selectedPattern) {
+                    identifier2 = PATTERN_SELECTED_TEXTURE;
+                } else if (bl) {
+                    identifier2 = PATTERN_HIGHLIGHTED_TEXTURE;
+                    DyeColor dyeColor2 = selectedDye;
+                    context.drawTooltip(Text.translatable(((BannerPattern)registryEntry.value()).translationKey() + "." + dyeColor2.getId()), mouseX, mouseY);
+                } else {
+                    identifier2 = PATTERN_TEXTURE;
+                }
+
+                context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, identifier2, s, t, PATTERN_ENTRY_SIZE, PATTERN_ENTRY_SIZE);
+                Sprite sprite = context.getSprite(TexturedRenderLayers.getBannerPatternTextureId(registryEntry));
+                this.drawBanner(context, s, t, sprite);
             }
         }
 
@@ -250,71 +274,75 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
         this.scrollbarClicked = false;
-        if (this.canApplyDyePattern) {
-            int i = this.x + 60;
-            int j = this.y + 15;
+        int i = this.x + PATTERN_LIST_OFFSET_X;
+        int j = this.y + PATTERN_LIST_OFFSET_Y;
 
-            for (int k = 0; k < 7; k++) {
-                for (int l = 0; l < 4; l++) {
-                    double d = click.x() - (i + l * 14);
-                    double e = click.y() - (j + k * 14);
-                    int m = k + this.visibleTopRow;
-                    int n = m * 4 + l;
+        for (int k = 0; k < PATTERN_LIST_ROWS; k++) {
+            for (int l = 0; l < PATTERN_LIST_COLUMNS; l++) {
+                double d = click.x() - (i + l * PATTERN_ENTRY_SIZE);
+                double e = click.y() - (j + k * PATTERN_ENTRY_SIZE);
+                int m = k + this.visibleTopRow;
+                int n = m * PATTERN_LIST_COLUMNS + l;
 
-
+                if (d >= 0.0 && e >= 0.0 && d < PATTERN_ENTRY_SIZE && e < PATTERN_ENTRY_SIZE && n < this.allPatterns.size()) {
                     RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
                     boolean inAvailable = this.handler.getBannerPatterns().contains(targetPattern);
-
-                    if (d >= 0.0 && e >= 0.0 && d < 14.0 && e < 14.0) {
-                        if (!inAvailable){
-                            Slot patternSlot = this.handler.getPatternSlot();
-                            if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
+                    if (!inAvailable){
+                        Slot patternSlot = this.handler.getPatternSlot();
+                        if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
+                            if (targetPattern.streamTags().toList().isEmpty()){
+                                int itemSlot = findBannerSlot(selectedDye);
+                                if (itemSlot!=-1) {
+                                    swapSlots(itemSlot, this.handler.getBannerSlot().id);
+                                    return true;
+                                }
+                            } else {
                                 int itemSlot = findPatternSlot(targetPattern);
-                                if (itemSlot != -1){
+                                if (itemSlot != -1) {
                                     swapSlots(itemSlot, patternSlot.id);
                                 } else {
                                     return true;
                                 }
-                            } else {
-                                if (patternSlot.hasStack()){
-                                    this.client.interactionManager.clickSlot(this.handler.syncId,
-                                            patternSlot.id,0,
-                                            SlotActionType.QUICK_MOVE,this.client.player
-                                    );
-                                }
+                            }
+                        } else {
+                            if (patternSlot.hasStack()){
+                                this.client.interactionManager.clickSlot(this.handler.syncId,
+                                      patternSlot.id,0,
+                                      SlotActionType.QUICK_MOVE,this.client.player
+                                );
                             }
                         }
-                        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                        this.selectedPattern = n;
-                        List<RegistryEntry<BannerPattern>> availablePatterns = this.handler.getBannerPatterns();
-                        int handlerIndex = IntStream.range(0, availablePatterns.size())
-                                .filter(variable -> availablePatterns.get(variable).equals(targetPattern))
-                                .findFirst().orElse(-1);
-                        this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
+                    }
+                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
+                    this.selectedPattern = n;
+                    List<RegistryEntry<BannerPattern>> availablePatterns = this.handler.getBannerPatterns();
+                    int handlerIndex = IntStream.range(0, availablePatterns.size())
+                          .filter(variable -> availablePatterns.get(variable).equals(targetPattern))
+                          .findFirst().orElse(-1);
+                    this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
 
+                    if (BetterLoomsClient.CONFIG.enableInstantcomplete) {
                         this.client.interactionManager.clickSlot(
-                                this.handler.syncId,3,0,
-                                SlotActionType.PICKUP,this.client.player
+                              this.handler.syncId, 3, 0,
+                              SlotActionType.PICKUP, this.client.player
                         );
                         this.client.interactionManager.clickSlot(
-                                this.handler.syncId,0,0,
-                                SlotActionType.QUICK_MOVE,this.client.player
+                              this.handler.syncId, 0, 0,
+                              SlotActionType.QUICK_MOVE, this.client.player
                         );
                         this.client.interactionManager.clickSlot(
-                                this.handler.syncId,0,0,
-                                SlotActionType.PICKUP,this.client.player
+                              this.handler.syncId, 0, 0,
+                              SlotActionType.PICKUP, this.client.player
                         );
-
-                        return true;
                     }
                 }
             }
+        }
 
-            i = this.x + 119;
-            j = this.y + 9;
-            if (click.x() >= i && click.x() < i + 12 && click.y() >= j && click.y() < j + 56) {
-                this.scrollbarClicked = true;
-            }
+        i = this.x + 100;
+        j = this.y + 19;
+        if (click.x() >= i && click.x() < i + 12 && click.y() >= j && click.y() < j + SCROLLBAR_AREA_HEIGHT) {
+          this.scrollbarClicked = true;
         }
 
         return super.mouseClicked(click, doubled);
@@ -322,10 +350,10 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
     @Override
     public boolean mouseDragged(Click click, double offsetX, double offsetY) {
-        int i = this.getRows() - 7;
-        if (this.scrollbarClicked && this.canApplyDyePattern && i > 0) {
-            int j = this.y + 13;
-            int k = j + 98;
+        int i = this.getRows() - PATTERN_LIST_ROWS; // Number of rows not shown
+        if (this.scrollbarClicked && i > 0) {
+            int j = this.y + 18;
+            int k = j + SCROLLBAR_AREA_HEIGHT;
             this.scrollPosition = ((float)click.y() - j - 7.5F) / (k - j - 15.0F);
             this.scrollPosition = MathHelper.clamp(this.scrollPosition, 0.0F, 1.0F);
             this.visibleTopRow = Math.max((int)(this.scrollPosition * i + 0.5), 0);
@@ -340,8 +368,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         if (super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             return true;
         } else {
-            int i = this.getRows() - 7;
-            if (this.canApplyDyePattern && i > 0) {
+            int i = this.getRows() - PATTERN_LIST_ROWS;
+            if (i > 0) {
                 float f = (float)verticalAmount / i;
                 this.scrollPosition = MathHelper.clamp(this.scrollPosition - f, 0.0F, 1.0F);
                 this.visibleTopRow = Math.max((int)(this.scrollPosition * i + 0.5F), 0);
@@ -357,7 +385,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     }
 
     private void onInventoryChanged() {
-        ItemStack itemStack = this.handler.getOutputSlot().getStack();
+        ItemStack itemStack = this.handler.getBannerSlot().getStack();
         if (itemStack.isEmpty()) {
             this.bannerPatterns = null;
         } else {
@@ -379,9 +407,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
             this.bannerPatterns = null;
         }
 
-        if (!ItemStack.areEqual(itemStack2, this.banner) || !ItemStack.areEqual(itemStack3, this.dye) || !ItemStack.areEqual(itemStack4, this.pattern)) {
-            this.canApplyDyePattern = !itemStack2.isEmpty() && !itemStack3.isEmpty() && !this.hasTooManyPatterns && !this.handler.getBannerPatterns().isEmpty();
-        }
 
         if (this.visibleTopRow >= this.getRows()) {
             this.visibleTopRow = 0;
@@ -428,6 +453,19 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                 TagKey<BannerPattern> provides =
                         slot.getStack().get(DataComponentTypes.PROVIDES_BANNER_PATTERNS);
                 if (provides !=null && pattern.isIn(provides)) {
+                    return slot.id;
+                }
+            }
+        }
+        return -1;
+    }
+    private int findBannerSlot(DyeColor selectedDye) {
+        for (int i = 0; i < this.handler.slots.size(); i++) {
+            Slot slot = this.handler.slots.get(i);
+            if (slot.inventory == this.client.player.getInventory()) {
+                if (slot.getStack().getItem() instanceof BannerItem bannerItem
+                        && bannerItem.getColor()==selectedDye
+                        && slot.getStack().get(DataComponentTypes.BANNER_PATTERNS).layers().isEmpty()){
                     return slot.id;
                 }
             }
