@@ -210,7 +210,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         int k = (int)(83.0F * this.scrollPosition);
         context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SCROLLER_TEXTURE, i + 100, j + 19 + k, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
-             DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
+            DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
             int l = i + 118;
             int m = j + 28;
             context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 50, m + 100);
