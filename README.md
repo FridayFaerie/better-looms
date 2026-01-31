@@ -19,8 +19,3 @@ TODO:
 
 
 (this mod was made with [ClongCraft](https://linktr.ee/ClongCraft) in mind - we apparently use banners there)
-
-
-
-
-with inspiration from https://github.com/NotchArrow/Interlace

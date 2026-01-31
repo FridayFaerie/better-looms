@@ -8,6 +8,8 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 @Config(name = "better-looms")
 public class BetterLoomsConfig implements ConfigData {
 
+    public boolean enable = true;
+
     public boolean enableInstantcomplete = true;
 
     @ConfigEntry.BoundedDiscrete(max = 100)

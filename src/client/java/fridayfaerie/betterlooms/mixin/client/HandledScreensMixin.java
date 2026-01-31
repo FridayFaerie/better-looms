@@ -1,9 +1,12 @@
 package fridayfaerie.betterlooms.mixin.client;
 
+import fridayfaerie.betterlooms.BetterLoomsClient;
 import fridayfaerie.betterlooms.screen.FancyLoomScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.gui.screen.ingame.LoomScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.LoomScreenHandler;
@@ -27,13 +30,18 @@ public class HandledScreensMixin {
 	private static void replaceLoomProvider(Args args) {
 		ScreenHandlerType<?> type = args.get(0);
 		if (type == ScreenHandlerType.LOOM) {
-			args.set(1, new HandledScreens.Provider<LoomScreenHandler, FancyLoomScreen>() {
+			HandledScreens.Provider provider = new HandledScreens.Provider() {
 				@Override
-				public FancyLoomScreen create(LoomScreenHandler handler, PlayerInventory inv, Text title) {
-					return new FancyLoomScreen(handler, inv, title);
-//					return new LoomScreen(handler, inv, title);
+				public Screen create(net.minecraft.screen.ScreenHandler handler, PlayerInventory inv, Text title) {
+					LoomScreenHandler loomHandler = (LoomScreenHandler) handler;
+					if (BetterLoomsClient.CONFIG != null && BetterLoomsClient.CONFIG.enable) {
+						return new FancyLoomScreen(loomHandler, inv, title);
+					} else {
+						return new LoomScreen(loomHandler, inv, title);
+					}
 				}
-			});
+			};
+			args.set(1, provider);
 		}
 	}
 }
