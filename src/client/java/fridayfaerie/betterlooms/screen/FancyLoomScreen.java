@@ -243,6 +243,16 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                     identifier2 = PATTERN_HIGHLIGHTED_TEXTURE;
                     DyeColor dyeColor2 = selectedDye;
                     context.drawTooltip(Text.translatable(((BannerPattern)registryEntry.value()).translationKey() + "." + dyeColor2.getId()), mouseX, mouseY);
+
+                    if (slot.getStack().getItem() instanceof BannerItem) {
+                        ItemStack preview = slot.getStack().copyWithCount(1);
+                        preview.apply(
+                                DataComponentTypes.BANNER_PATTERNS,
+                                BannerPatternsComponent.DEFAULT,
+                                component -> new BannerPatternsComponent.Builder().addAll(component).add(registryEntry, selectedDye).build()
+                        );
+                    this.bannerPatterns = (BannerPatternsComponent)preview.getOrDefault(DataComponentTypes.BANNER_PATTERNS, BannerPatternsComponent.DEFAULT);
+                    }
                 } else {
                     identifier2 = PATTERN_TEXTURE;
                 }
