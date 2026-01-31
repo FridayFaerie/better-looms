@@ -195,6 +195,8 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         Slot slot2 = this.handler.getDyeSlot();
         Slot slot3 = this.handler.getPatternSlot();
         Slot slot4 = this.handler.getOutputSlot();
+
+
         if (!slot.hasStack()) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BANNER_SLOT_TEXTURE, i + slot.x, j + slot.y, 16, 16);
         }
@@ -210,10 +212,16 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         int k = (int)(83.0F * this.scrollPosition);
         context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SCROLLER_TEXTURE, i + 100, j + 19 + k, SCROLLBAR_WIDTH, SCROLLBAR_HEIGHT);
         if (this.bannerPatterns != null && !this.hasTooManyPatterns) {
-             DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
+            DyeColor dyeColor = ((BannerItem)slot.getStack().getItem()).getColor();
             int l = i + 118;
             int m = j + 28;
             context.addBannerResult(this.bannerField, dyeColor, this.bannerPatterns, l, m, l + 50, m + 100);
+            if (slot.hasStack()) {
+                this.bannerPatterns = (BannerPatternsComponent) slot.getStack().getOrDefault(DataComponentTypes.BANNER_PATTERNS, BannerPatternsComponent.DEFAULT);
+            } else {
+                this.bannerPatterns = null;
+            }
+
         } else if (this.hasTooManyPatterns) {
             context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, ERROR_TEXTURE, i + slot4.x - 5, j + slot4.y - 5, 26, 26);
         }
@@ -243,6 +251,16 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                     identifier2 = PATTERN_HIGHLIGHTED_TEXTURE;
                     DyeColor dyeColor2 = selectedDye;
                     context.drawTooltip(Text.translatable(((BannerPattern)registryEntry.value()).translationKey() + "." + dyeColor2.getId()), mouseX, mouseY);
+
+                    if (slot.getStack().getItem() instanceof BannerItem) {
+                        ItemStack preview = slot.getStack().copyWithCount(1);
+                        preview.apply(
+                                DataComponentTypes.BANNER_PATTERNS,
+                                BannerPatternsComponent.DEFAULT,
+                                component -> new BannerPatternsComponent.Builder().addAll(component).add(registryEntry, selectedDye).build()
+                        );
+                        this.bannerPatterns = (BannerPatternsComponent)preview.getOrDefault(DataComponentTypes.BANNER_PATTERNS, BannerPatternsComponent.DEFAULT);
+                    }
                 } else {
                     identifier2 = PATTERN_TEXTURE;
                 }
