@@ -25,7 +25,7 @@ public class BetterLoomsClient implements ClientModInitializer {
 
 
 	public static KeyBinding binding1;
-	KeyBinding.Category bannerKeyboardCategory = KeyBinding.Category.create(Identifier.of("betterlooms", "banner_keyboard_category"));
+	KeyBinding.Category bannerKeyboardCategory = KeyBinding.Category.create(Identifier.of("better-looms", "banner_keyboard_category"));
 
 
 	@Override
@@ -34,7 +34,7 @@ public class BetterLoomsClient implements ClientModInitializer {
 		CONFIG = AutoConfig.getConfigHolder(BetterLoomsConfig.class).getConfig();
 
 		for (FancyLoomScreen.ColorOrPattern action : FancyLoomScreen.ColorOrPattern.values()){
-			String id = "key.betterlooms." + action.name().toLowerCase();
+			String id = "key.better-looms." + action.name().toLowerCase();
 			int defaultKey = defaultKeys(action);
 			int defaultCtrl = defaultCtrls(action);
 			int defaultShift = defaultShifts(action);
@@ -61,15 +61,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 
 	private static int defaultKeys(FancyLoomScreen.ColorOrPattern action) {
 		return switch (action) {
-			case COLOR_1 -> GLFW.GLFW_KEY_U;
-			case COLOR_2 -> GLFW.GLFW_KEY_I;
-			case COLOR_3 -> GLFW.GLFW_KEY_O;
-			case COLOR_4 -> GLFW.GLFW_KEY_P;
-			case COLOR_5 -> GLFW.GLFW_KEY_LEFT_BRACKET;
-			case COLOR_6 -> GLFW.GLFW_KEY_RIGHT_BRACKET;
-			case COLOR_7 -> GLFW.GLFW_KEY_H;
-			case COLOR_8 -> GLFW.GLFW_KEY_J;
-			case COLOR_9 -> GLFW.GLFW_KEY_K;
+			case COLOR_01 -> GLFW.GLFW_KEY_U;
+			case COLOR_02 -> GLFW.GLFW_KEY_I;
+			case COLOR_03 -> GLFW.GLFW_KEY_O;
+			case COLOR_04 -> GLFW.GLFW_KEY_P;
+			case COLOR_05 -> GLFW.GLFW_KEY_LEFT_BRACKET;
+			case COLOR_06 -> GLFW.GLFW_KEY_RIGHT_BRACKET;
+			case COLOR_07 -> GLFW.GLFW_KEY_H;
+			case COLOR_08 -> GLFW.GLFW_KEY_J;
+			case COLOR_09 -> GLFW.GLFW_KEY_K;
 			case COLOR_10 -> GLFW.GLFW_KEY_L;
 			case COLOR_11 -> GLFW.GLFW_KEY_SEMICOLON;
 			case COLOR_12 -> GLFW.GLFW_KEY_N;
@@ -77,15 +77,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 			case COLOR_14 -> GLFW.GLFW_KEY_COMMA;
 			case COLOR_15 -> GLFW.GLFW_KEY_PERIOD;
 			case COLOR_16 -> GLFW.GLFW_KEY_SLASH;
-			case PATTERN_1-> GLFW.GLFW_KEY_Q;
-			case PATTERN_2-> GLFW.GLFW_KEY_W;
-			case PATTERN_3-> GLFW.GLFW_KEY_B;
-			case PATTERN_4-> GLFW.GLFW_KEY_V;
-			case PATTERN_5-> GLFW.GLFW_KEY_Z;
-			case PATTERN_6 -> GLFW.GLFW_KEY_D;
-			case PATTERN_7 -> GLFW.GLFW_KEY_W;
-			case PATTERN_8 -> GLFW.GLFW_KEY_G;
-			case PATTERN_9 -> GLFW.GLFW_KEY_G;
+			case PATTERN_01-> GLFW.GLFW_KEY_Q;
+			case PATTERN_02-> GLFW.GLFW_KEY_W;
+			case PATTERN_03-> GLFW.GLFW_KEY_B;
+			case PATTERN_04-> GLFW.GLFW_KEY_V;
+			case PATTERN_05-> GLFW.GLFW_KEY_Z;
+			case PATTERN_06 -> GLFW.GLFW_KEY_D;
+			case PATTERN_07 -> GLFW.GLFW_KEY_W;
+			case PATTERN_08 -> GLFW.GLFW_KEY_G;
+			case PATTERN_09 -> GLFW.GLFW_KEY_G;
 			case PATTERN_10 -> GLFW.GLFW_KEY_G;
 			case PATTERN_11 -> GLFW.GLFW_KEY_G;
 			case PATTERN_12 -> GLFW.GLFW_KEY_V;
@@ -124,15 +124,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 	}
 	private static int defaultCtrls(FancyLoomScreen.ColorOrPattern action) {
 		return switch (action) {
-			case COLOR_1 -> -1;
-			case COLOR_2 -> -1;
-			case COLOR_3 -> -1;
-			case COLOR_4 -> -1;
-			case COLOR_5 -> -1;
-			case COLOR_6 -> -1;
-			case COLOR_7 -> -1;
-			case COLOR_8 -> -1;
-			case COLOR_9 -> -1;
+			case COLOR_01 -> -1;
+			case COLOR_02 -> -1;
+			case COLOR_03 -> -1;
+			case COLOR_04 -> -1;
+			case COLOR_05 -> -1;
+			case COLOR_06 -> -1;
+			case COLOR_07 -> -1;
+			case COLOR_08 -> -1;
+			case COLOR_09 -> -1;
 			case COLOR_10 -> -1;
 			case COLOR_11 -> -1;
 			case COLOR_12 -> -1;
@@ -140,15 +140,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 			case COLOR_14 -> -1;
 			case COLOR_15 -> -1;
 			case COLOR_16 -> -1;
-			case PATTERN_1 -> -1;
-			case PATTERN_2 -> -1;
-			case PATTERN_3 -> -1;
-			case PATTERN_4 -> -1;
-			case PATTERN_5 -> -1;
-			case PATTERN_6 -> -1;
-			case PATTERN_7 -> -1;
-			case PATTERN_8 -> -1;
-			case PATTERN_9 -> -1;
+			case PATTERN_01 -> -1;
+			case PATTERN_02 -> -1;
+			case PATTERN_03 -> -1;
+			case PATTERN_04 -> -1;
+			case PATTERN_05 -> -1;
+			case PATTERN_06 -> -1;
+			case PATTERN_07 -> -1;
+			case PATTERN_08 -> -1;
+			case PATTERN_09 -> -1;
 			case PATTERN_10 -> -1;
 			case PATTERN_11 -> -1;
 			case PATTERN_12 -> -1;
@@ -187,15 +187,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 	}
 	private static int defaultShifts(FancyLoomScreen.ColorOrPattern action) {
 		return switch (action) {
-			case COLOR_1 -> -1;
-			case COLOR_2 -> -1;
-			case COLOR_3 -> -1;
-			case COLOR_4 -> -1;
-			case COLOR_5 -> -1;
-			case COLOR_6 -> -1;
-			case COLOR_7 -> -1;
-			case COLOR_8 -> -1;
-			case COLOR_9 -> -1;
+			case COLOR_01 -> -1;
+			case COLOR_02 -> -1;
+			case COLOR_03 -> -1;
+			case COLOR_04 -> -1;
+			case COLOR_05 -> -1;
+			case COLOR_06 -> -1;
+			case COLOR_07 -> -1;
+			case COLOR_08 -> -1;
+			case COLOR_09 -> -1;
 			case COLOR_10 -> -1;
 			case COLOR_11 -> -1;
 			case COLOR_12 -> -1;
@@ -203,15 +203,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 			case COLOR_14 -> -1;
 			case COLOR_15 -> -1;
 			case COLOR_16 -> -1;
-			case PATTERN_1 -> -1;
-			case PATTERN_2 -> -1;
-			case PATTERN_3 -> -1;
-			case PATTERN_4 -> -1;
-			case PATTERN_5 -> -1;
-			case PATTERN_6 -> -1;
-			case PATTERN_7 -> GLFW.GLFW_KEY_LEFT_SHIFT;
-			case PATTERN_8 -> -1;
-			case PATTERN_9 -> GLFW.GLFW_KEY_LEFT_SHIFT;
+			case PATTERN_01 -> -1;
+			case PATTERN_02 -> -1;
+			case PATTERN_03 -> -1;
+			case PATTERN_04 -> -1;
+			case PATTERN_05 -> -1;
+			case PATTERN_06 -> -1;
+			case PATTERN_07 -> GLFW.GLFW_KEY_LEFT_SHIFT;
+			case PATTERN_08 -> -1;
+			case PATTERN_09 -> GLFW.GLFW_KEY_LEFT_SHIFT;
 			case PATTERN_10 -> -1;
 			case PATTERN_11 -> GLFW.GLFW_KEY_LEFT_SHIFT;
 			case PATTERN_12 -> -1;
@@ -249,15 +249,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 		};
 	}	private static int defaultAlts(FancyLoomScreen.ColorOrPattern action) {
 		return switch (action) {
-			case COLOR_1 -> -1;
-			case COLOR_2 -> -1;
-			case COLOR_3 -> -1;
-			case COLOR_4 -> -1;
-			case COLOR_5 -> -1;
-			case COLOR_6 -> -1;
-			case COLOR_7 -> -1;
-			case COLOR_8 -> -1;
-			case COLOR_9 -> -1;
+			case COLOR_01 -> -1;
+			case COLOR_02 -> -1;
+			case COLOR_03 -> -1;
+			case COLOR_04 -> -1;
+			case COLOR_05 -> -1;
+			case COLOR_06 -> -1;
+			case COLOR_07 -> -1;
+			case COLOR_08 -> -1;
+			case COLOR_09 -> -1;
 			case COLOR_10 -> -1;
 			case COLOR_11 -> -1;
 			case COLOR_12 -> -1;
@@ -265,15 +265,15 @@ public class BetterLoomsClient implements ClientModInitializer {
 			case COLOR_14 -> -1;
 			case COLOR_15 -> -1;
 			case COLOR_16 -> -1;
-			case PATTERN_1 -> -1;
-			case PATTERN_2 -> -1;
-			case PATTERN_3 -> -1;
-			case PATTERN_4 -> -1;
-			case PATTERN_5 -> -1;
-			case PATTERN_6 -> GLFW.GLFW_KEY_LEFT_ALT;
-			case PATTERN_7 -> -1;
-			case PATTERN_8 -> -1;
-			case PATTERN_9 -> -1;
+			case PATTERN_01 -> -1;
+			case PATTERN_02 -> -1;
+			case PATTERN_03 -> -1;
+			case PATTERN_04 -> -1;
+			case PATTERN_05 -> -1;
+			case PATTERN_06 -> GLFW.GLFW_KEY_LEFT_ALT;
+			case PATTERN_07 -> -1;
+			case PATTERN_08 -> -1;
+			case PATTERN_09 -> -1;
 			case PATTERN_10 -> GLFW.GLFW_KEY_LEFT_ALT;
 			case PATTERN_11 -> GLFW.GLFW_KEY_LEFT_ALT;
 			case PATTERN_12 -> GLFW.GLFW_KEY_LEFT_ALT;
