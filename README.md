@@ -9,12 +9,8 @@ minecraft mod that improves on banner GUI.
 - clicking on colours moves dye into appropriate slot.
 - clicking on banner pattern automatically completes the pattern, brings the output back into the input slot
 - clicking on "blank" pattern brings in a blank banner of that colour.
+- also supports keyboard input - using https://banner-writer.web.app/keylayout.png as the default layout
 
-
-
-
-TODO: 
-- add finishing touches to GUI
 
 
 
