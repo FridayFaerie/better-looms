@@ -1,8 +1,10 @@
 package fridayfaerie.betterlooms.screen;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
+import fridayfaerie.betterlooms.BetterLooms;
 import fridayfaerie.betterlooms.BetterLoomsClient;
 import fridayfaerie.betterlooms.config.BetterLoomsConfig;
 import fridayfaerie.betterlooms.mixin.client.SlotAccessor;
@@ -13,8 +15,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.navigation.GuiNavigation;
+import net.minecraft.client.gui.navigation.GuiNavigationPath;
+import net.minecraft.client.gui.navigation.NavigationDirection;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.block.entity.model.BannerFlagBlockModel;
@@ -40,6 +47,7 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
@@ -157,22 +165,79 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                         if (slot2.hasStack() && ((DyeItem)slot2.getStack().getItem()).getColor() == dyeColor) {
                             return;
                         };
-                        selectedDye = dyeColor;
-                        int dyeSlot = findDyeSlot(dyeColor);
-                        if (dyeSlot != -1) {
-                            swapSlots(dyeSlot, 1);
-                        } else {
-                            this.client.interactionManager.clickSlot(this.handler.syncId,
-                                    1,0,
-                                    SlotActionType.QUICK_MOVE,this.client.player
-                            );
-                        }
+                        selectDye(dyeColor);
+
                     }
             );
             this.addDrawableChild(dyeButton);
         }
 
 
+    }
+    private void selectDye(DyeColor dyeColor){
+        selectedDye = dyeColor;
+        int dyeSlot = findDyeSlot(dyeColor);
+        if (dyeSlot != -1) {
+            swapSlots(dyeSlot, 1);
+        } else {
+            this.client.interactionManager.clickSlot(this.handler.syncId,
+                    1,0,
+                    SlotActionType.QUICK_MOVE,this.client.player
+            );
+        }
+    }
+    private boolean selectPatternByIndex(int n) {
+        RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
+        boolean inAvailable = this.handler.getBannerPatterns().contains(targetPattern);
+        if (!inAvailable){
+            Slot patternSlot = this.handler.getPatternSlot();
+            if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
+                if (targetPattern.streamTags().toList().isEmpty()){
+                    int itemSlot = findBannerSlot(selectedDye);
+                    if (itemSlot!=-1) {
+                        swapSlots(itemSlot, this.handler.getBannerSlot().id);
+                        return true;
+                    }
+                } else {
+                    int itemSlot = findPatternSlot(targetPattern);
+                    if (itemSlot != -1) {
+                        swapSlots(itemSlot, patternSlot.id);
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
+                if (patternSlot.hasStack()){
+                    this.client.interactionManager.clickSlot(this.handler.syncId,
+                            patternSlot.id,0,
+                            SlotActionType.QUICK_MOVE,this.client.player
+                    );
+                }
+            }
+        }
+        MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
+        this.selectedPattern = n;
+        List<RegistryEntry<BannerPattern>> availablePatterns = this.handler.getBannerPatterns();
+        int handlerIndex = IntStream.range(0, availablePatterns.size())
+                .filter(variable -> availablePatterns.get(variable).equals(targetPattern))
+                .findFirst().orElse(-1);
+        this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
+
+        if (BetterLoomsClient.CONFIG.enableInstantcomplete) {
+            this.client.interactionManager.clickSlot(
+                    this.handler.syncId, 3, 0,
+                    SlotActionType.PICKUP, this.client.player
+            );
+            this.client.interactionManager.clickSlot(
+                    this.handler.syncId, 0, 0,
+                    SlotActionType.QUICK_MOVE, this.client.player
+            );
+            this.client.interactionManager.clickSlot(
+                    this.handler.syncId, 0, 0,
+                    SlotActionType.PICKUP, this.client.player
+            );
+        }
+        return true;
     }
 
     @Override
@@ -303,56 +368,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                 int n = m * PATTERN_LIST_COLUMNS + l;
 
                 if (d >= 0.0 && e >= 0.0 && d < PATTERN_ENTRY_SIZE && e < PATTERN_ENTRY_SIZE && n < this.allPatterns.size()) {
-                    RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
-                    boolean inAvailable = this.handler.getBannerPatterns().contains(targetPattern);
-                    if (!inAvailable){
-                        Slot patternSlot = this.handler.getPatternSlot();
-                        if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
-                            if (targetPattern.streamTags().toList().isEmpty()){
-                                int itemSlot = findBannerSlot(selectedDye);
-                                if (itemSlot!=-1) {
-                                    swapSlots(itemSlot, this.handler.getBannerSlot().id);
-                                    return true;
-                                }
-                            } else {
-                                int itemSlot = findPatternSlot(targetPattern);
-                                if (itemSlot != -1) {
-                                    swapSlots(itemSlot, patternSlot.id);
-                                } else {
-                                    return true;
-                                }
-                            }
-                        } else {
-                            if (patternSlot.hasStack()){
-                                this.client.interactionManager.clickSlot(this.handler.syncId,
-                                      patternSlot.id,0,
-                                      SlotActionType.QUICK_MOVE,this.client.player
-                                );
-                            }
-                        }
-                    }
-                    MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                    this.selectedPattern = n;
-                    List<RegistryEntry<BannerPattern>> availablePatterns = this.handler.getBannerPatterns();
-                    int handlerIndex = IntStream.range(0, availablePatterns.size())
-                          .filter(variable -> availablePatterns.get(variable).equals(targetPattern))
-                          .findFirst().orElse(-1);
-                    this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
-
-                    if (BetterLoomsClient.CONFIG.enableInstantcomplete) {
-                        this.client.interactionManager.clickSlot(
-                              this.handler.syncId, 3, 0,
-                              SlotActionType.PICKUP, this.client.player
-                        );
-                        this.client.interactionManager.clickSlot(
-                              this.handler.syncId, 0, 0,
-                              SlotActionType.QUICK_MOVE, this.client.player
-                        );
-                        this.client.interactionManager.clickSlot(
-                              this.handler.syncId, 0, 0,
-                              SlotActionType.PICKUP, this.client.player
-                        );
-                    }
+                    return selectPatternByIndex(n);
                 }
             }
         }
@@ -401,6 +417,107 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top) {
         return mouseX < left || mouseY < top || mouseX >= left + this.backgroundWidth || mouseY >= top + this.backgroundHeight;
     }
+
+    @Override
+    public boolean keyPressed(KeyInput input) {
+
+        for (Map.Entry<ColorOrPattern, KeyBinding> entry : BetterLoomsClient.KEY_BINDINGS.entrySet()){
+            KeyBinding keyBinding = entry.getValue();
+            if (keyBinding != null && keyBinding.matchesKey(input)){
+                ColorOrPattern action = entry.getKey();
+                int modifierBinding = 0;
+                if (!BetterLoomsClient.SHIFT_BINDINGS.get(action).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                    modifierBinding += 1;
+                }
+                if (!BetterLoomsClient.CTRL_BINDINGS.get(action).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                    modifierBinding += 2;
+                }
+                if (!BetterLoomsClient.ALT_BINDINGS.get(action).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                    modifierBinding += 4;
+                }
+                if (input.modifiers() == modifierBinding){
+                    performAction(entry.getKey());
+                }
+            }
+        }
+        return super.keyPressed(input);
+    }
+
+
+    private void performAction(ColorOrPattern action) {
+        if (ACTION_TO_COLOR.containsKey(action)) {
+            selectDye(ACTION_TO_COLOR.get(action));
+        }
+        else if (ACTION_TO_PATTERN_INDEX.containsKey(action)) {
+            BetterLooms.LOGGER.info("selected pattern: " + ACTION_TO_COLOR.get(action));
+            selectPatternByIndex(ACTION_TO_PATTERN_INDEX.get(action));
+        }
+    }
+    private static final Map<ColorOrPattern, DyeColor> ACTION_TO_COLOR = Map.ofEntries(
+            Map.entry(ColorOrPattern.COLOR_1, DyeColor.WHITE),
+            Map.entry(ColorOrPattern.COLOR_2, DyeColor.ORANGE),
+            Map.entry(ColorOrPattern.COLOR_3, DyeColor.MAGENTA),
+            Map.entry(ColorOrPattern.COLOR_4, DyeColor.LIGHT_BLUE),
+            Map.entry(ColorOrPattern.COLOR_5, DyeColor.YELLOW),
+            Map.entry(ColorOrPattern.COLOR_6, DyeColor.LIME),
+            Map.entry(ColorOrPattern.COLOR_7, DyeColor.PINK),
+            Map.entry(ColorOrPattern.COLOR_8, DyeColor.GRAY),
+            Map.entry(ColorOrPattern.COLOR_9, DyeColor.LIGHT_GRAY),
+            Map.entry(ColorOrPattern.COLOR_10, DyeColor.CYAN),
+            Map.entry(ColorOrPattern.COLOR_11, DyeColor.PURPLE),
+            Map.entry(ColorOrPattern.COLOR_12, DyeColor.BLUE),
+            Map.entry(ColorOrPattern.COLOR_13, DyeColor.BROWN),
+            Map.entry(ColorOrPattern.COLOR_14, DyeColor.GREEN),
+            Map.entry(ColorOrPattern.COLOR_15, DyeColor.RED),
+            Map.entry(ColorOrPattern.COLOR_16, DyeColor.BLACK)
+    );
+
+    private static final Map<ColorOrPattern, Integer> ACTION_TO_PATTERN_INDEX = Map.ofEntries(
+            Map.entry(ColorOrPattern.PATTERN_1,  0),
+            Map.entry(ColorOrPattern.PATTERN_2,  1),
+            Map.entry(ColorOrPattern.PATTERN_3,  2),
+            Map.entry(ColorOrPattern.PATTERN_4,  3),
+            Map.entry(ColorOrPattern.PATTERN_5,  4),
+            Map.entry(ColorOrPattern.PATTERN_6,  5),
+            Map.entry(ColorOrPattern.PATTERN_7,  6),
+            Map.entry(ColorOrPattern.PATTERN_8,  7),
+            Map.entry(ColorOrPattern.PATTERN_9,  8),
+            Map.entry(ColorOrPattern.PATTERN_10, 9),
+            Map.entry(ColorOrPattern.PATTERN_11, 10),
+            Map.entry(ColorOrPattern.PATTERN_12, 11),
+            Map.entry(ColorOrPattern.PATTERN_13, 12),
+            Map.entry(ColorOrPattern.PATTERN_14, 13),
+            Map.entry(ColorOrPattern.PATTERN_15, 14),
+            Map.entry(ColorOrPattern.PATTERN_16, 15),
+            Map.entry(ColorOrPattern.PATTERN_17, 16),
+            Map.entry(ColorOrPattern.PATTERN_18, 17),
+            Map.entry(ColorOrPattern.PATTERN_19, 18),
+            Map.entry(ColorOrPattern.PATTERN_20, 19),
+            Map.entry(ColorOrPattern.PATTERN_21, 20),
+            Map.entry(ColorOrPattern.PATTERN_22, 21),
+            Map.entry(ColorOrPattern.PATTERN_23, 22),
+            Map.entry(ColorOrPattern.PATTERN_24, 23),
+            Map.entry(ColorOrPattern.PATTERN_25, 24),
+            Map.entry(ColorOrPattern.PATTERN_26, 25),
+            Map.entry(ColorOrPattern.PATTERN_27, 26),
+            Map.entry(ColorOrPattern.PATTERN_28, 27),
+            Map.entry(ColorOrPattern.PATTERN_29, 28),
+            Map.entry(ColorOrPattern.PATTERN_30, 29),
+            Map.entry(ColorOrPattern.PATTERN_31, 30),
+            Map.entry(ColorOrPattern.PATTERN_32, 31),
+            Map.entry(ColorOrPattern.PATTERN_33, 32),
+            Map.entry(ColorOrPattern.PATTERN_34, 33),
+            Map.entry(ColorOrPattern.PATTERN_35, 34),
+            Map.entry(ColorOrPattern.PATTERN_36, 35),
+            Map.entry(ColorOrPattern.PATTERN_37, 36),
+            Map.entry(ColorOrPattern.PATTERN_38, 37),
+            Map.entry(ColorOrPattern.PATTERN_39, 38),
+            Map.entry(ColorOrPattern.PATTERN_40, 39),
+            Map.entry(ColorOrPattern.PATTERN_41, 40),
+            Map.entry(ColorOrPattern.PATTERN_42, 41),
+            Map.entry(ColorOrPattern.PATTERN_43, 42)
+    );
+
 
     private void onInventoryChanged() {
         ItemStack itemStack = this.handler.getBannerSlot().getStack();
@@ -491,5 +608,66 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         return -1;
     }
 
+    public enum ColorOrPattern {
+        COLOR_1,
+        COLOR_2,
+        COLOR_3,
+        COLOR_4,
+        COLOR_5,
+        COLOR_6,
+        COLOR_7,
+        COLOR_8,
+        COLOR_9,
+        COLOR_10,
+        COLOR_11,
+        COLOR_12,
+        COLOR_13,
+        COLOR_14,
+        COLOR_15,
+        COLOR_16,
+        PATTERN_1,
+        PATTERN_2,
+        PATTERN_3,
+        PATTERN_4,
+        PATTERN_5,
+        PATTERN_6,
+        PATTERN_7,
+        PATTERN_8,
+        PATTERN_9,
+        PATTERN_10,
+        PATTERN_11,
+        PATTERN_12,
+        PATTERN_13,
+        PATTERN_14,
+        PATTERN_15,
+        PATTERN_16,
+        PATTERN_17,
+        PATTERN_18,
+        PATTERN_19,
+        PATTERN_20,
+        PATTERN_21,
+        PATTERN_22,
+        PATTERN_23,
+        PATTERN_24,
+        PATTERN_25,
+        PATTERN_26,
+        PATTERN_27,
+        PATTERN_28,
+        PATTERN_29,
+        PATTERN_30,
+        PATTERN_31,
+        PATTERN_32,
+        PATTERN_33,
+        PATTERN_34,
+        PATTERN_35,
+        PATTERN_36,
+        PATTERN_37,
+        PATTERN_38,
+        PATTERN_39,
+        PATTERN_40,
+        PATTERN_41,
+        PATTERN_42,
+        PATTERN_43,
+    }
 
 }
