@@ -169,7 +169,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
 
     }
-    private void selectDye(DyeColor dyeColor){
+    private boolean selectDye(DyeColor dyeColor){
         selectedDye = dyeColor;
         int dyeSlot = findDyeSlot(dyeColor);
         if (dyeSlot != -1) {
@@ -180,6 +180,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                     SlotActionType.QUICK_MOVE,this.client.player
             );
         }
+        return true;
     }
     private boolean selectPatternByIndex(int n) {
         RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
@@ -417,103 +418,50 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
     public boolean keyPressed(KeyInput input) {
 
         if (BetterLoomsClient.CONFIG.enableKeyboard) {
-            for (Map.Entry<ColorOrPattern, KeyBinding> entry : BetterLoomsClient.KEY_BINDINGS.entrySet()) {
+            for (Map.Entry<DyeColor, KeyBinding> entry : BetterLoomsClient.COLOR_KEY_BINDINGS.entrySet()) {
                 KeyBinding keyBinding = entry.getValue();
                 if (keyBinding != null && keyBinding.matchesKey(input)) {
-                    ColorOrPattern action = entry.getKey();
+                    DyeColor color = entry.getKey();
                     int modifierBinding = 0;
-                    if (!BetterLoomsClient.SHIFT_BINDINGS.get(action).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                    if (!BetterLoomsClient.COLOR_SHIFT_BINDINGS.get(color).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
                         modifierBinding += 1;
                     }
-                    if (!BetterLoomsClient.CTRL_BINDINGS.get(action).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                    if (!BetterLoomsClient.COLOR_CTRL_BINDINGS.get(color).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
                         modifierBinding += 2;
                     }
-                    if (!BetterLoomsClient.ALT_BINDINGS.get(action).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                    if (!BetterLoomsClient.COLOR_ALT_BINDINGS.get(color).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
                         modifierBinding += 4;
                     }
                     if (input.modifiers() == modifierBinding) {
-                        performAction(entry.getKey());
+                        return selectDye(entry.getKey());
                     }
                 }
             }
+
+            for (Map.Entry<Integer, KeyBinding> entry : BetterLoomsClient.PATTERN_KEY_BINDINGS.entrySet()) {
+                KeyBinding keyBinding = entry.getValue();
+                if (keyBinding != null && keyBinding.matchesKey(input)) {
+                    int pattern = entry.getKey();
+                    int modifierBinding = 0;
+                    if (!BetterLoomsClient.PATTERN_SHIFT_BINDINGS.get(pattern).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                        modifierBinding += 1;
+                    }
+                    if (!BetterLoomsClient.PATTERN_CTRL_BINDINGS.get(pattern).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                        modifierBinding += 2;
+                    }
+                    if (!BetterLoomsClient.PATTERN_ALT_BINDINGS.get(pattern).getBoundKeyTranslationKey().equals("key.keyboard.unknown")) {
+                        modifierBinding += 4;
+                    }
+                    if (input.modifiers() == modifierBinding) {
+                        return selectPatternByIndex(pattern);
+                    }
+                }
+            }
+
+
         }
         return super.keyPressed(input);
     }
-
-
-    private void performAction(ColorOrPattern action) {
-        if (ACTION_TO_COLOR.containsKey(action)) {
-            selectDye(ACTION_TO_COLOR.get(action));
-        }
-        else if (ACTION_TO_PATTERN_INDEX.containsKey(action)) {
-            BetterLooms.LOGGER.info("selected pattern: " + ACTION_TO_COLOR.get(action));
-            selectPatternByIndex(ACTION_TO_PATTERN_INDEX.get(action));
-        }
-    }
-    private static final Map<ColorOrPattern, DyeColor> ACTION_TO_COLOR = Map.ofEntries(
-            Map.entry(ColorOrPattern.COLOR_01, DyeColor.WHITE),
-            Map.entry(ColorOrPattern.COLOR_02, DyeColor.ORANGE),
-            Map.entry(ColorOrPattern.COLOR_03, DyeColor.MAGENTA),
-            Map.entry(ColorOrPattern.COLOR_04, DyeColor.LIGHT_BLUE),
-            Map.entry(ColorOrPattern.COLOR_05, DyeColor.YELLOW),
-            Map.entry(ColorOrPattern.COLOR_06, DyeColor.LIME),
-            Map.entry(ColorOrPattern.COLOR_07, DyeColor.PINK),
-            Map.entry(ColorOrPattern.COLOR_08, DyeColor.GRAY),
-            Map.entry(ColorOrPattern.COLOR_09, DyeColor.LIGHT_GRAY),
-            Map.entry(ColorOrPattern.COLOR_10, DyeColor.CYAN),
-            Map.entry(ColorOrPattern.COLOR_11, DyeColor.PURPLE),
-            Map.entry(ColorOrPattern.COLOR_12, DyeColor.BLUE),
-            Map.entry(ColorOrPattern.COLOR_13, DyeColor.BROWN),
-            Map.entry(ColorOrPattern.COLOR_14, DyeColor.GREEN),
-            Map.entry(ColorOrPattern.COLOR_15, DyeColor.RED),
-            Map.entry(ColorOrPattern.COLOR_16, DyeColor.BLACK)
-    );
-
-    private static final Map<ColorOrPattern, Integer> ACTION_TO_PATTERN_INDEX = Map.ofEntries(
-            Map.entry(ColorOrPattern.PATTERN_01,  0),
-            Map.entry(ColorOrPattern.PATTERN_02,  1),
-            Map.entry(ColorOrPattern.PATTERN_03,  2),
-            Map.entry(ColorOrPattern.PATTERN_04,  3),
-            Map.entry(ColorOrPattern.PATTERN_05,  4),
-            Map.entry(ColorOrPattern.PATTERN_06,  5),
-            Map.entry(ColorOrPattern.PATTERN_07,  6),
-            Map.entry(ColorOrPattern.PATTERN_08,  7),
-            Map.entry(ColorOrPattern.PATTERN_09,  8),
-            Map.entry(ColorOrPattern.PATTERN_10, 9),
-            Map.entry(ColorOrPattern.PATTERN_11, 10),
-            Map.entry(ColorOrPattern.PATTERN_12, 11),
-            Map.entry(ColorOrPattern.PATTERN_13, 12),
-            Map.entry(ColorOrPattern.PATTERN_14, 13),
-            Map.entry(ColorOrPattern.PATTERN_15, 14),
-            Map.entry(ColorOrPattern.PATTERN_16, 15),
-            Map.entry(ColorOrPattern.PATTERN_17, 16),
-            Map.entry(ColorOrPattern.PATTERN_18, 17),
-            Map.entry(ColorOrPattern.PATTERN_19, 18),
-            Map.entry(ColorOrPattern.PATTERN_20, 19),
-            Map.entry(ColorOrPattern.PATTERN_21, 20),
-            Map.entry(ColorOrPattern.PATTERN_22, 21),
-            Map.entry(ColorOrPattern.PATTERN_23, 22),
-            Map.entry(ColorOrPattern.PATTERN_24, 23),
-            Map.entry(ColorOrPattern.PATTERN_25, 24),
-            Map.entry(ColorOrPattern.PATTERN_26, 25),
-            Map.entry(ColorOrPattern.PATTERN_27, 26),
-            Map.entry(ColorOrPattern.PATTERN_28, 27),
-            Map.entry(ColorOrPattern.PATTERN_29, 28),
-            Map.entry(ColorOrPattern.PATTERN_30, 29),
-            Map.entry(ColorOrPattern.PATTERN_31, 30),
-            Map.entry(ColorOrPattern.PATTERN_32, 31),
-            Map.entry(ColorOrPattern.PATTERN_33, 32),
-            Map.entry(ColorOrPattern.PATTERN_34, 33),
-            Map.entry(ColorOrPattern.PATTERN_35, 34),
-            Map.entry(ColorOrPattern.PATTERN_36, 35),
-            Map.entry(ColorOrPattern.PATTERN_37, 36),
-            Map.entry(ColorOrPattern.PATTERN_38, 37),
-            Map.entry(ColorOrPattern.PATTERN_39, 38),
-            Map.entry(ColorOrPattern.PATTERN_40, 39),
-            Map.entry(ColorOrPattern.PATTERN_41, 40),
-            Map.entry(ColorOrPattern.PATTERN_42, 41),
-            Map.entry(ColorOrPattern.PATTERN_43, 42)
-    );
 
 
     private void onInventoryChanged() {
@@ -605,7 +553,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         return -1;
     }
 
-    public enum ColorOrPattern {
+    public enum ColorOrPatternTODELETE{
         COLOR_01,
         COLOR_02,
         COLOR_03,
