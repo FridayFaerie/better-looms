@@ -14,6 +14,8 @@ public class BetterLoomsConfig implements ConfigData {
 
     public boolean enableInstantComplete = true;
 
+    public boolean enableManyPatterns = false;
+
 //    @ConfigEntry.BoundedDiscrete(max = 100)
 //    public int i1;
 //    @ConfigEntry.BoundedDiscrete(max = 100)

@@ -170,6 +170,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
 
     }
     private boolean selectDye(DyeColor dyeColor){
+        BetterLooms.LOGGER.debug("Selecting dye: "+dyeColor);
         selectedDye = dyeColor;
         int dyeSlot = findDyeSlot(dyeColor);
         if (dyeSlot != -1) {
@@ -183,6 +184,10 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         return true;
     }
     private boolean selectPatternByIndex(int n) {
+        if (!BetterLoomsClient.CONFIG.enableManyPatterns && this.hasTooManyPatterns){
+            return true;
+        }
+        BetterLooms.LOGGER.debug("Selecting pattern: "+n);
         RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
         boolean inAvailable = this.handler.getBannerPatterns().contains(targetPattern);
         if (!inAvailable){
@@ -198,9 +203,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                     int itemSlot = findPatternSlot(targetPattern);
                     if (itemSlot != -1) {
                         swapSlots(itemSlot, patternSlot.id);
-                    } else {
-                        return true;
-                    }
+                    } else { return true; }
                 }
             } else {
                 if (patternSlot.hasStack()){
@@ -208,7 +211,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                             patternSlot.id,0,
                             SlotActionType.QUICK_MOVE,this.client.player
                     );
-                }
+                } else {return true;}
             }
         }
         MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
@@ -219,7 +222,7 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                 .findFirst().orElse(-1);
         this.client.interactionManager.clickButton(this.handler.syncId, handlerIndex);
 
-        if (BetterLoomsClient.CONFIG.enableInstantComplete) {
+        if (BetterLoomsClient.CONFIG.enableInstantComplete ) {
             this.client.interactionManager.clickSlot(
                     this.handler.syncId, 3, 0,
                     SlotActionType.PICKUP, this.client.player
