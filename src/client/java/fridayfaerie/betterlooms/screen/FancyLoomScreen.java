@@ -189,29 +189,41 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         }
         BetterLooms.LOGGER.debug("Selecting pattern: "+n);
         RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
-        boolean inAvailable = this.handler.getBannerPatterns().contains(targetPattern);
-        if (!inAvailable){
-            Slot patternSlot = this.handler.getPatternSlot();
-            if (!targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
-                if (targetPattern.streamTags().toList().isEmpty()){
-                    int itemSlot = findBannerSlot(selectedDye);
-                    if (itemSlot!=-1) {
-                        swapSlots(itemSlot, this.handler.getBannerSlot().id);
-                        return true;
-                    }
-                } else {
-                    int itemSlot = findPatternSlot(targetPattern);
-                    if (itemSlot != -1) {
-                        swapSlots(itemSlot, patternSlot.id);
-                    } else { return true; }
-                }
+
+        if (targetPattern.streamTags().toList().isEmpty()){
+            int itemSlot = findBannerSlot(selectedDye);
+            if (itemSlot !=-1) {
+                swapSlots(itemSlot, this.handler.getBannerSlot().id);
+                return true;
+            } return false;
+        }
+
+        Slot dyeSlot = this.handler.getDyeSlot();
+
+        if (!dyeSlot.hasStack()) {
+            int inventoryDye = findDyeSlot(selectedDye);
+            if (inventoryDye != -1) {
+                swapSlots(inventoryDye,1);
             } else {
-                if (patternSlot.hasStack()){
-                    this.client.interactionManager.clickSlot(this.handler.syncId,
-                            patternSlot.id,0,
-                            SlotActionType.QUICK_MOVE,this.client.player
-                    );
-                } else {return true;}
+                return false;
+            }
+        }
+
+        if (targetPattern.isIn(BannerPatternTags.NO_ITEM_REQUIRED)) {
+            this.client.interactionManager.clickSlot(this.handler.syncId,
+                    2,0,
+                    SlotActionType.QUICK_MOVE,this.client.player
+            );
+        } else {
+            this.client.interactionManager.clickSlot(this.handler.syncId,
+                    2,0,
+                    SlotActionType.QUICK_MOVE,this.client.player
+            );
+            int inventoryPattern = findPatternSlot(targetPattern);
+            if (inventoryPattern != -1) {
+                swapSlots(inventoryPattern, 2);
+            } else {
+                return false;
             }
         }
         MinecraftClient.getInstance().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
