@@ -184,9 +184,6 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
         return true;
     }
     private boolean selectPatternByIndex(int n) {
-        if (!BetterLoomsClient.CONFIG.enableManyPatterns && this.hasTooManyPatterns){
-            return true;
-        }
         BetterLooms.LOGGER.debug("Selecting pattern: "+n);
         RegistryEntry<BannerPattern> targetPattern = this.allPatterns.get(n);
 
@@ -196,6 +193,10 @@ public class FancyLoomScreen extends HandledScreen<LoomScreenHandler> {
                 swapSlots(itemSlot, this.handler.getBannerSlot().id);
                 return true;
             } return false;
+        }
+
+        if (!BetterLoomsClient.CONFIG.enableManyPatterns && this.hasTooManyPatterns){
+            return true;
         }
 
         Slot dyeSlot = this.handler.getDyeSlot();
